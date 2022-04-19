@@ -1,0 +1,16 @@
+{
+  "debug": true,
+  "secret": "LJdZ0jH9Q7lpRdL",
+  "cors": {
+    "origin": "*"
+  },
+  "redis": "redis://redis",
+  "session": {
+    "store": {
+      "$type": "redis"
+    }
+  },
+  "stripe": {
+    "secretKey": "sk_test_51JLV2cERsMaXFKnduAO18JuHr5FzjyewWQ6SH9SJgK6G37IQBOAhCrRqVzFIMYV9JWKdrxtCzLG8sf7lYqG8KAr000hR4uQajP"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "conversation_pin_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "delete",
+        "module": "dbupdater",
+        "action": "delete",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "delete",
+            "table": "Conversation_Pin",
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "id",
+                  "field": "id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.conversation_pin_id}}",
+                  "data": {
+                    "column": "id"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "DELETE\nFROM Conversation_Pin\nWHERE id = :P1 /* {{$_POST.conversation_pin_id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.conversation_pin_id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Conversation/User_conversation_pins/Query_chat_pins"
+        }
+      }
+    ]
+  }
+}

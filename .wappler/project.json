@@ -1,0 +1,62 @@
+{
+  "projectName": "Taskbit",
+  "styleFile": "/css/style.css",
+  "assetsFolder": "/assets",
+  "designFramework": "bootstrap5",
+  "frameworks": [
+    {
+      "name": "appConnect",
+      "type": "local"
+    },
+    {
+      "name": "fontawesome_5",
+      "type": "cdn"
+    },
+    {
+      "name": "bootstrap5",
+      "type": "local"
+    },
+    {
+      "name": "bootstrap_icons",
+      "type": "cdn"
+    },
+    {
+      "name": "moment_2",
+      "type": "local with locales"
+    }
+  ],
+  "hostingType": "docker",
+  "projectServerModel": "node",
+  "webRootFolder": "/public",
+  "useRouting": true,
+  "addBase": true,
+  "routingHandler": "node",
+  "targets": [
+    {
+      "name": "Development",
+      "remoteURL": "http://localhost:8100",
+      "webServerPort": 8100,
+      "webServerLang": "node",
+      "targetType": "docker",
+      "webServer": "node",
+      "NodeVersion": "14",
+      "databaseType": "postgres",
+      "databasePort": 9906,
+      "postgresVersion": "12.4.x",
+      "postgres_rootName": "db_user",
+      "postgres_rootPassword": "sc2ql0XY",
+      "postgres_databaseName": "taskbit",
+      "dockerTimezone": "Etc/UTC",
+      "webLoggingMaxFiles": "5",
+      "webLoggingMaxFileSize": "10m",
+      "databaseLoggingMaxFiles": "5",
+      "databaseLoggingMaxFileSize": "10m",
+      "NodeOS": "buster",
+      "NodeImageType": "slim"
+    }
+  ],
+  "activeTarget": "Development",
+  "projectType": "web",
+  "projectLinksType": "site",
+  "userUploadsFolder": "/public/assets/Img"
+}

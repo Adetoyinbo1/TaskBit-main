@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "conversation_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": true,
+        "meta": []
+      },
+      {
+        "name": "query_notifications",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Notification",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Notification"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Notification.Conversationi_id",
+                  "field": "Notification.Conversationi_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_POST.conversation_id}}",
+                  "data": {
+                    "table": "Notification",
+                    "column": "Conversationi_id",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Notification.Notified_user_id",
+                  "field": "Notification.Notified_user_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{identity}}",
+                  "data": {
+                    "table": "Notification",
+                    "column": "Notified_user_id",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT id\nFROM Notification\nWHERE Conversationi_id = :P1 /* {{$_POST.conversation_id}} */ AND Notified_user_id = :P2 /* {{identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.conversation_id}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{identity}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "repeat_notifications",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{query_notifications}}",
+          "outputFields": [
+            "id"
+          ],
+          "exec": {
+            "steps": {
+              "name": "delete",
+              "module": "dbupdater",
+              "action": "delete",
+              "options": {
+                "connection": "db",
+                "sql": {
+                  "type": "delete",
+                  "table": "Notification",
+                  "wheres": {
+                    "condition": "AND",
+                    "rules": [
+                      {
+                        "id": "id",
+                        "field": "id",
+                        "type": "double",
+                        "operator": "equal",
+                        "value": "{{id}}",
+                        "data": {
+                          "column": "id"
+                        },
+                        "operation": "="
+                      }
+                    ],
+                    "conditional": null,
+                    "valid": true
+                  },
+                  "query": "DELETE\nFROM Notification\nWHERE id = :P1 /* {{id}} */",
+                  "params": [
+                    {
+                      "operator": "equal",
+                      "type": "expression",
+                      "name": ":P1",
+                      "value": "{{id}}"
+                    }
+                  ]
+                }
+              },
+              "meta": [
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Notification/Query_notifications"
+        }
+      }
+    ]
+  }
+}

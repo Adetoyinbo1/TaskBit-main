@@ -1,0 +1,776 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "id"
+      },
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "Task",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Tasks",
+                "column": "TaskTitle"
+              },
+              {
+                "table": "Tasks",
+                "column": "AvatarUrl"
+              },
+              {
+                "table": "Tasks",
+                "column": "Task_description"
+              },
+              {
+                "table": "Users",
+                "column": "FirstName"
+              },
+              {
+                "table": "Users",
+                "column": "LastName"
+              },
+              {
+                "table": "Users",
+                "column": "Role"
+              },
+              {
+                "table": "Users",
+                "column": "Department"
+              },
+              {
+                "table": "Tasks",
+                "column": "id"
+              },
+              {
+                "table": "Users",
+                "column": "imgUrl"
+              },
+              {
+                "table": "Tasks",
+                "column": "Chat_started"
+              }
+            ],
+            "table": {
+              "name": "Tasks"
+            },
+            "joins": [
+              {
+                "table": "Users",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Users",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Tasks",
+                        "column": "CreatorID"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Tasks.id",
+                  "field": "Tasks.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_GET.id}}",
+                  "data": {
+                    "table": "Tasks",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT Tasks.TaskTitle, Tasks.AvatarUrl, Tasks.Task_description, Users.FirstName, Users.LastName, Users.Role, Users.Department, Tasks.id, Users.imgUrl, Tasks.Chat_started\nFROM Tasks\nINNER JOIN Users ON (Users.id = Tasks.CreatorID)\nWHERE Tasks.id = :P1 /* {{$_GET.id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_GET.id}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "TaskTitle",
+            "type": "text"
+          },
+          {
+            "name": "AvatarUrl",
+            "type": "text"
+          },
+          {
+            "name": "Task_description",
+            "type": "text"
+          },
+          {
+            "name": "FirstName",
+            "type": "text"
+          },
+          {
+            "name": "LastName",
+            "type": "text"
+          },
+          {
+            "name": "Role",
+            "type": "text"
+          },
+          {
+            "name": "Department",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "imgUrl",
+            "type": "text"
+          },
+          {
+            "name": "Chat_started",
+            "type": "boolean"
+          }
+        ],
+        "type": "dbconnector_single",
+        "outputType": "object"
+      },
+      {
+        "name": "Direct_processes",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Process",
+                "column": "ProcessTitle"
+              },
+              {
+                "table": "Process",
+                "column": "Due_date"
+              },
+              {
+                "table": "Process",
+                "column": "AssignedUserID"
+              },
+              {
+                "table": "Process",
+                "column": "Completed"
+              },
+              {
+                "table": "Process",
+                "column": "Notes"
+              },
+              {
+                "table": "Users",
+                "column": "imgUrl"
+              },
+              {
+                "table": "Users",
+                "column": "FirstName"
+              },
+              {
+                "table": "Users",
+                "column": "LastName"
+              },
+              {
+                "table": "Users",
+                "column": "Role"
+              },
+              {
+                "table": "Process",
+                "column": "id"
+              },
+              {
+                "table": "Process",
+                "column": "Chat_started"
+              }
+            ],
+            "table": {
+              "name": "Process"
+            },
+            "joins": [
+              {
+                "table": "Users",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Users",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Process",
+                        "column": "AssignedUserID"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "query": "SELECT Process.ProcessTitle, Process.Due_date, Process.AssignedUserID, Process.Completed, Process.Notes, Users.imgUrl, Users.FirstName, Users.LastName, Users.Role, Process.id, Process.Chat_started\nFROM Process\nINNER JOIN Users ON (Users.id = Process.AssignedUserID)\nWHERE Process.TaskId = :P1 /* {{Task.id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{Task.id}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Process.TaskId",
+                  "field": "Process.TaskId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{Task.id}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "TaskId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "ProcessTitle",
+            "type": "text"
+          },
+          {
+            "name": "Due_date",
+            "type": "datetime"
+          },
+          {
+            "name": "AssignedUserID",
+            "type": "text"
+          },
+          {
+            "name": "Completed",
+            "type": "boolean"
+          },
+          {
+            "name": "Notes",
+            "type": "text"
+          },
+          {
+            "name": "imgUrl",
+            "type": "text"
+          },
+          {
+            "name": "FirstName",
+            "type": "text"
+          },
+          {
+            "name": "LastName",
+            "type": "text"
+          },
+          {
+            "name": "Role",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "Chat_started",
+            "type": "boolean"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "Sub_Task_query",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Tasks",
+                "column": "TaskTitle"
+              },
+              {
+                "table": "Tasks",
+                "column": "AvatarUrl"
+              },
+              {
+                "table": "Tasks",
+                "column": "Task_description"
+              },
+              {
+                "table": "Users",
+                "column": "FirstName"
+              },
+              {
+                "table": "Users",
+                "column": "LastName"
+              },
+              {
+                "table": "Users",
+                "column": "Role"
+              },
+              {
+                "table": "Users",
+                "column": "Department"
+              },
+              {
+                "table": "Tasks",
+                "column": "id"
+              },
+              {
+                "table": "Users",
+                "column": "imgUrl"
+              },
+              {
+                "table": "Tasks",
+                "column": "Chat_started"
+              }
+            ],
+            "table": {
+              "name": "Tasks"
+            },
+            "joins": [
+              {
+                "table": "Users",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Users",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Tasks",
+                        "column": "CreatorID"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Tasks.ReferenceTaskId",
+                  "field": "Tasks.ReferenceTaskId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{Task.id}}",
+                  "data": {
+                    "table": "Tasks",
+                    "column": "ReferenceTaskId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT Tasks.TaskTitle, Tasks.AvatarUrl, Tasks.Task_description, Users.FirstName, Users.LastName, Users.Role, Users.Department, Tasks.id, Users.imgUrl, Tasks.Chat_started\nFROM Tasks\nINNER JOIN Users ON (Users.id = Tasks.CreatorID)\nWHERE Tasks.ReferenceTaskId = :P1 /* {{Task.id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{Task.id}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "TaskTitle",
+            "type": "text"
+          },
+          {
+            "name": "AvatarUrl",
+            "type": "text"
+          },
+          {
+            "name": "Task_description",
+            "type": "text"
+          },
+          {
+            "name": "FirstName",
+            "type": "text"
+          },
+          {
+            "name": "LastName",
+            "type": "text"
+          },
+          {
+            "name": "Role",
+            "type": "text"
+          },
+          {
+            "name": "Department",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "imgUrl",
+            "type": "text"
+          },
+          {
+            "name": "Chat_started",
+            "type": "boolean"
+          }
+        ],
+        "type": "dbconnector_select",
+        "outputType": "array"
+      },
+      {
+        "name": "repeat_SubTasks",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{Sub_Task_query}}",
+          "outputFields": [
+            "TaskTitle",
+            "AvatarUrl",
+            "Task_description",
+            "FirstName",
+            "LastName",
+            "Role",
+            "Department",
+            "id",
+            "imgUrl",
+            "Chat_started"
+          ],
+          "exec": {
+            "steps": {
+              "name": "Subtask_processeses",
+              "module": "dbconnector",
+              "action": "select",
+              "options": {
+                "connection": "db",
+                "sql": {
+                  "type": "SELECT",
+                  "columns": [
+                    {
+                      "table": "Process",
+                      "column": "ProcessTitle"
+                    },
+                    {
+                      "table": "Process",
+                      "column": "Due_date"
+                    },
+                    {
+                      "table": "Process",
+                      "column": "AssignedUserID"
+                    },
+                    {
+                      "table": "Process",
+                      "column": "Completed"
+                    },
+                    {
+                      "table": "Process",
+                      "column": "Notes"
+                    },
+                    {
+                      "table": "Users",
+                      "column": "FirstName"
+                    },
+                    {
+                      "table": "Users",
+                      "column": "LastName"
+                    },
+                    {
+                      "table": "Users",
+                      "column": "Role"
+                    },
+                    {
+                      "table": "Users",
+                      "column": "imgUrl"
+                    },
+                    {
+                      "table": "Process",
+                      "column": "id"
+                    },
+                    {
+                      "table": "Process",
+                      "column": "Chat_started"
+                    }
+                  ],
+                  "table": {
+                    "name": "Process"
+                  },
+                  "joins": [
+                    {
+                      "table": "Users",
+                      "column": "*",
+                      "type": "INNER",
+                      "clauses": {
+                        "condition": "AND",
+                        "rules": [
+                          {
+                            "table": "Users",
+                            "column": "id",
+                            "operator": "equal",
+                            "value": {
+                              "table": "Process",
+                              "column": "AssignedUserID"
+                            },
+                            "operation": "="
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "query": "SELECT Process.ProcessTitle, Process.Due_date, Process.AssignedUserID, Process.Completed, Process.Notes, Users.FirstName, Users.LastName, Users.Role, Users.imgUrl, Process.id, Process.Chat_started\nFROM Process\nINNER JOIN Users ON (Users.id = Process.AssignedUserID)\nWHERE Process.TaskId = :P1 /* {{id}} */",
+                  "params": [
+                    {
+                      "operator": "equal",
+                      "type": "expression",
+                      "name": ":P1",
+                      "value": "{{id}}"
+                    }
+                  ],
+                  "wheres": {
+                    "condition": "AND",
+                    "rules": [
+                      {
+                        "id": "Process.TaskId",
+                        "field": "Process.TaskId",
+                        "type": "string",
+                        "operator": "equal",
+                        "value": "{{id}}",
+                        "data": {
+                          "table": "Process",
+                          "column": "TaskId",
+                          "type": "text"
+                        },
+                        "operation": "="
+                      }
+                    ],
+                    "conditional": null,
+                    "valid": true
+                  }
+                }
+              },
+              "output": true,
+              "meta": [
+                {
+                  "name": "ProcessTitle",
+                  "type": "text"
+                },
+                {
+                  "name": "Due_date",
+                  "type": "datetime"
+                },
+                {
+                  "name": "AssignedUserID",
+                  "type": "text"
+                },
+                {
+                  "name": "Completed",
+                  "type": "boolean"
+                },
+                {
+                  "name": "Notes",
+                  "type": "text"
+                },
+                {
+                  "name": "FirstName",
+                  "type": "text"
+                },
+                {
+                  "name": "LastName",
+                  "type": "text"
+                },
+                {
+                  "name": "Role",
+                  "type": "text"
+                },
+                {
+                  "name": "imgUrl",
+                  "type": "text"
+                },
+                {
+                  "name": "id",
+                  "type": "text"
+                },
+                {
+                  "name": "Chat_started",
+                  "type": "boolean"
+                }
+              ],
+              "outputType": "array"
+            }
+          }
+        },
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "TaskTitle",
+            "type": "text"
+          },
+          {
+            "name": "AvatarUrl",
+            "type": "text"
+          },
+          {
+            "name": "Task_description",
+            "type": "text"
+          },
+          {
+            "name": "FirstName",
+            "type": "text"
+          },
+          {
+            "name": "LastName",
+            "type": "text"
+          },
+          {
+            "name": "Role",
+            "type": "text"
+          },
+          {
+            "name": "Department",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "imgUrl",
+            "type": "text"
+          },
+          {
+            "name": "Chat_started",
+            "type": "boolean"
+          },
+          {
+            "name": "Subtask_processeses",
+            "type": "array",
+            "sub": [
+              {
+                "name": "ProcessTitle",
+                "type": "text"
+              },
+              {
+                "name": "Due_date",
+                "type": "datetime"
+              },
+              {
+                "name": "AssignedUserID",
+                "type": "text"
+              },
+              {
+                "name": "Completed",
+                "type": "boolean"
+              },
+              {
+                "name": "Notes",
+                "type": "text"
+              },
+              {
+                "name": "FirstName",
+                "type": "text"
+              },
+              {
+                "name": "LastName",
+                "type": "text"
+              },
+              {
+                "name": "Role",
+                "type": "text"
+              },
+              {
+                "name": "imgUrl",
+                "type": "text"
+              },
+              {
+                "name": "id",
+                "type": "text"
+              },
+              {
+                "name": "Chat_started",
+                "type": "boolean"
+              }
+            ]
+          }
+        ],
+        "outputType": "array",
+        "output": true
+      }
+    ]
+  }
+}

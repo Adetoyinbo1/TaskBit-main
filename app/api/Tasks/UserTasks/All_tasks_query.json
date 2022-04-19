@@ -1,0 +1,198 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "companyid"
+      },
+      {
+        "type": "text",
+        "name": "task_status"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_currentUser_Tasks",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Process",
+                "column": "TaskId"
+              },
+              {
+                "table": "Tasks",
+                "column": "TaskTitle"
+              },
+              {
+                "table": "Tasks",
+                "column": "Type"
+              },
+              {
+                "table": "Tasks",
+                "column": "AvatarUrl"
+              },
+              {
+                "table": "Tasks",
+                "column": "Final_date"
+              },
+              {
+                "table": "Tasks",
+                "column": "Chat_started"
+              }
+            ],
+            "table": {
+              "name": "Process"
+            },
+            "joins": [
+              {
+                "table": "Tasks",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Tasks",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Process",
+                        "column": "TaskId"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Process.AssignedUserID",
+                  "field": "Process.AssignedUserID",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "AssignedUserID",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Process.Completed",
+                  "field": "Process.Completed",
+                  "type": "boolean",
+                  "operator": "equal",
+                  "value": "{{$_GET.task_status}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "Completed",
+                    "type": "boolean"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Tasks.CompanyId",
+                  "field": "Tasks.CompanyId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_GET.companyid}}",
+                  "data": {
+                    "table": "Tasks",
+                    "column": "CompanyId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Tasks.ReferenceTaskId",
+                  "field": "Tasks.ReferenceTaskId",
+                  "type": "string",
+                  "operator": "is_null",
+                  "value": null,
+                  "data": {
+                    "table": "Tasks",
+                    "column": "ReferenceTaskId",
+                    "type": "text"
+                  },
+                  "operation": "IS NULL"
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT DISTINCT Process.TaskId, Tasks.TaskTitle, Tasks.Type, Tasks.AvatarUrl, Tasks.Final_date, Tasks.Chat_started\nFROM Process\nINNER JOIN Tasks ON (Tasks.id = Process.TaskId)\nWHERE Process.AssignedUserID = :P1 /* {{security.identity}} */ AND Process.Completed = :P2 /* {{$_GET.task_status}} */ AND Tasks.CompanyId = :P3 /* {{$_GET.companyid}} */ AND Tasks.ReferenceTaskId IS NULL",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{security.identity}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{$_GET.task_status}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P3",
+                "value": "{{$_GET.companyid}}"
+              }
+            ],
+            "distinct": true
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "TaskId",
+            "type": "text"
+          },
+          {
+            "name": "TaskTitle",
+            "type": "text"
+          },
+          {
+            "name": "Type",
+            "type": "text"
+          },
+          {
+            "name": "AvatarUrl",
+            "type": "text"
+          },
+          {
+            "name": "Final_date",
+            "type": "datetime"
+          },
+          {
+            "name": "Chat_started",
+            "type": "boolean"
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

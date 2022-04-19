@@ -1,0 +1,471 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "convo_id"
+      },
+      {
+        "type": "text",
+        "name": "offset"
+      },
+      {
+        "type": "text",
+        "name": "limit"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": true,
+        "meta": []
+      },
+      {
+        "name": "query_CurrentUser_participant",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Participants",
+                "column": "ConversationId"
+              },
+              {
+                "table": "Participants",
+                "column": "id",
+                "alias": "Participantsid"
+              }
+            ],
+            "table": {
+              "name": "Participants"
+            },
+            "joins": [
+              {
+                "table": "Conversation",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Conversation",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Participants",
+                        "column": "ConversationId"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Participants.UserId",
+                  "field": "Participants.UserId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{identity}}",
+                  "data": {
+                    "table": "Participants",
+                    "column": "UserId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Conversation.Type",
+                  "field": "Conversation.Type",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "Task",
+                  "data": {
+                    "table": "Conversation",
+                    "column": "Type",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT Participants.ConversationId, Participants.id AS Participantsid\nFROM Participants\nINNER JOIN Conversation ON (Conversation.id = Participants.ConversationId)\nWHERE Participants.UserId = :P1 /* {{identity}} */ AND Conversation.Type = 'Task'",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{identity}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "ConversationId",
+            "type": "text"
+          },
+          {
+            "name": "Participantsid",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "repeat_currentUser",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{query_CurrentUser_participant}}",
+          "outputFields": [
+            "ConversationId",
+            "Participantsid"
+          ],
+          "exec": {
+            "steps": [
+              {
+                "name": "query",
+                "module": "dbconnector",
+                "action": "select",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Conversation",
+                        "column": "id"
+                      },
+                      {
+                        "table": "Users",
+                        "column": "imgUrl"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "TaskTitle"
+                      }
+                    ],
+                    "table": {
+                      "name": "Conversation"
+                    },
+                    "joins": [
+                      {
+                        "table": "Users",
+                        "column": "*",
+                        "type": "INNER",
+                        "clauses": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "table": "Users",
+                              "column": "id",
+                              "operator": "equal",
+                              "value": {
+                                "table": "Conversation",
+                                "column": "Creator"
+                              },
+                              "operation": "="
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "*",
+                        "type": "INNER",
+                        "clauses": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "table": "Tasks",
+                              "column": "id",
+                              "operator": "equal",
+                              "value": {
+                                "table": "Conversation",
+                                "column": "TaskId"
+                              },
+                              "operation": "="
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Conversation.id",
+                          "field": "Conversation.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{ConversationId}}",
+                          "data": {
+                            "table": "Conversation",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT Conversation.id, Users.imgUrl, Tasks.TaskTitle\nFROM Conversation\nINNER JOIN Users ON (Users.id = Conversation.Creator) INNER JOIN Tasks ON (Tasks.id = Conversation.TaskId)\nWHERE Conversation.id = :P1 /* {{ConversationId}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{ConversationId}}"
+                      }
+                    ],
+                    "orders": []
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "imgUrl",
+                    "type": "text"
+                  },
+                  {
+                    "name": "TaskTitle",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "array",
+                "type": "dbconnector_select"
+              },
+              {
+                "name": "repeat_coversation",
+                "module": "core",
+                "action": "repeat",
+                "options": {
+                  "repeat": "{{query}}",
+                  "outputFields": [
+                    "id",
+                    "imgUrl",
+                    "TaskTitle"
+                  ],
+                  "exec": {
+                    "steps": {
+                      "name": "query1",
+                      "module": "dbconnector",
+                      "action": "single",
+                      "options": {
+                        "connection": "db",
+                        "sql": {
+                          "type": "SELECT",
+                          "columns": [
+                            {
+                              "table": "Conversation_chats",
+                              "column": "ChatText"
+                            }
+                          ],
+                          "table": {
+                            "name": "Conversation_chats"
+                          },
+                          "joins": [],
+                          "wheres": {
+                            "condition": "AND",
+                            "rules": [
+                              {
+                                "id": "Conversation_chats.ConversationId",
+                                "field": "Conversation_chats.ConversationId",
+                                "type": "string",
+                                "operator": "equal",
+                                "value": "{{id}}",
+                                "data": {
+                                  "table": "Conversation_chats",
+                                  "column": "ConversationId",
+                                  "type": "text"
+                                },
+                                "operation": "="
+                              }
+                            ],
+                            "conditional": null,
+                            "valid": true
+                          },
+                          "orders": [
+                            {
+                              "table": "Conversation_chats",
+                              "column": "id",
+                              "direction": "DESC"
+                            }
+                          ],
+                          "query": "SELECT ChatText\nFROM Conversation_chats\nWHERE ConversationId = :P1 /* {{id}} */\nORDER BY id DESC",
+                          "params": [
+                            {
+                              "operator": "equal",
+                              "type": "expression",
+                              "name": ":P1",
+                              "value": "{{id}}"
+                            }
+                          ]
+                        }
+                      },
+                      "output": true,
+                      "meta": [
+                        {
+                          "name": "ChatText",
+                          "type": "text"
+                        }
+                      ],
+                      "outputType": "object",
+                      "type": "dbconnector_single"
+                    }
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "$index",
+                    "type": "number"
+                  },
+                  {
+                    "name": "$number",
+                    "type": "number"
+                  },
+                  {
+                    "name": "$name",
+                    "type": "text"
+                  },
+                  {
+                    "name": "$value",
+                    "type": "object"
+                  },
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "imgUrl",
+                    "type": "text"
+                  },
+                  {
+                    "name": "TaskTitle",
+                    "type": "text"
+                  },
+                  {
+                    "name": "query1",
+                    "type": "object",
+                    "sub": [
+                      {
+                        "name": "ChatText",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ],
+                "outputType": "array"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "ConversationId",
+            "type": "text"
+          },
+          {
+            "name": "Participantsid",
+            "type": "text"
+          },
+          {
+            "name": "query",
+            "type": "array",
+            "sub": [
+              {
+                "name": "id",
+                "type": "text"
+              },
+              {
+                "name": "imgUrl",
+                "type": "text"
+              },
+              {
+                "name": "TaskTitle",
+                "type": "text"
+              }
+            ]
+          },
+          {
+            "name": "repeat_coversation",
+            "type": "array",
+            "sub": [
+              {
+                "name": "id",
+                "type": "text"
+              },
+              {
+                "name": "imgUrl",
+                "type": "text"
+              },
+              {
+                "name": "TaskTitle",
+                "type": "text"
+              },
+              {
+                "name": "query1",
+                "type": "object",
+                "sub": [
+                  {
+                    "name": "ChatText",
+                    "type": "text"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

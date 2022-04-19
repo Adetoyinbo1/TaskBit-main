@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "query",
+      "module": "dbconnector",
+      "action": "select",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "Process",
+              "column": "id"
+            }
+          ],
+          "table": {
+            "name": "Process"
+          },
+          "joins": [],
+          "wheres": {
+            "condition": "AND",
+            "rules": [
+              {
+                "id": "Process.Completed",
+                "field": "Process.Completed",
+                "type": "boolean",
+                "operator": "is_null",
+                "value": null,
+                "data": {
+                  "table": "Process",
+                  "column": "Completed",
+                  "type": "boolean"
+                },
+                "operation": "IS NULL"
+              }
+            ],
+            "conditional": null,
+            "valid": true
+          },
+          "query": "SELECT id\nFROM Process\nWHERE Completed IS NULL",
+          "params": []
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "name": "id",
+          "type": "text"
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

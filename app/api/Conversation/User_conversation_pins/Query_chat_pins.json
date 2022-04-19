@@ -1,0 +1,384 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "convo_id"
+      },
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_pins",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Conversation_Pin",
+                "column": "Msg_id"
+              },
+              {
+                "table": "Conversation_Pin",
+                "column": "id",
+                "alias": "Conversation_pin"
+              }
+            ],
+            "table": {
+              "name": "Conversation_Pin"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Conversation_Pin.ConversationId",
+                  "field": "Conversation_Pin.ConversationId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_GET.convo_id}}",
+                  "data": {
+                    "table": "Conversation_Pin",
+                    "column": "ConversationId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Conversation_Pin.Pinner_id",
+                  "field": "Conversation_Pin.Pinner_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Conversation_Pin",
+                    "column": "Pinner_id",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT Msg_id, id AS Conversation_pin\nFROM Conversation_Pin\nWHERE ConversationId = :P1 /* {{$_GET.convo_id}} */ AND Pinner_id = :P2 /* {{security.identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_GET.convo_id}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{security.identity}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "Msg_id",
+            "type": "text"
+          },
+          {
+            "name": "Conversation_pin",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "repeat_pins",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{query_pins}}",
+          "outputFields": [
+            "Msg_id",
+            "Conversation_pin"
+          ],
+          "exec": {
+            "steps": [
+              {
+                "name": "query_messages",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Conversation_chats",
+                        "column": "ChatText"
+                      },
+                      {
+                        "table": "Conversation_chats",
+                        "column": "Chat_Type"
+                      },
+                      {
+                        "table": "Conversation_chats",
+                        "column": "id"
+                      },
+                      {
+                        "table": "Users",
+                        "column": "FirstName"
+                      },
+                      {
+                        "table": "Users",
+                        "column": "LastName"
+                      },
+                      {
+                        "table": "Conversation_chats",
+                        "column": "Creation_date"
+                      }
+                    ],
+                    "table": {
+                      "name": "Conversation_chats"
+                    },
+                    "joins": [
+                      {
+                        "table": "Users",
+                        "column": "*",
+                        "type": "INNER",
+                        "clauses": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "table": "Users",
+                              "column": "id",
+                              "operator": "equal",
+                              "value": {
+                                "table": "Conversation_chats",
+                                "column": "Creator"
+                              },
+                              "operation": "="
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Conversation_chats.id",
+                          "field": "Conversation_chats.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{Msg_id}}",
+                          "data": {
+                            "table": "Conversation_chats",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT Conversation_chats.ChatText, Conversation_chats.Chat_Type, Conversation_chats.id, Users.FirstName, Users.LastName, Conversation_chats.Creation_date\nFROM Conversation_chats\nINNER JOIN Users ON (Users.id = Conversation_chats.Creator)\nWHERE Conversation_chats.id = :P1 /* {{Msg_id}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{Msg_id}}"
+                      }
+                    ]
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "ChatText",
+                    "type": "text"
+                  },
+                  {
+                    "name": "Chat_Type",
+                    "type": "text"
+                  },
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "FirstName",
+                    "type": "text"
+                  },
+                  {
+                    "name": "LastName",
+                    "type": "text"
+                  },
+                  {
+                    "name": "Creation_date",
+                    "type": "datetime"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "query_messages_attachments",
+                "module": "dbconnector",
+                "action": "select",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Chats_attachments",
+                        "column": "FileName"
+                      },
+                      {
+                        "table": "Chats_attachments",
+                        "column": "FileUrl"
+                      }
+                    ],
+                    "table": {
+                      "name": "Chats_attachments"
+                    },
+                    "joins": [],
+                    "query": "SELECT FileName, FileUrl\nFROM Chats_attachments\nWHERE Chat_msg_id = :P1 /* {{query_messages.id}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{query_messages.id}}"
+                      }
+                    ],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Chats_attachments.Chat_msg_id",
+                          "field": "Chats_attachments.Chat_msg_id",
+                          "type": "string",
+                          "operator": "equal",
+                          "value": "{{query_messages.id}}",
+                          "data": {
+                            "table": "Chats_attachments",
+                            "column": "Chat_msg_id",
+                            "type": "text"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    }
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "FileName",
+                    "type": "text"
+                  },
+                  {
+                    "name": "FileUrl",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "array",
+                "type": "dbconnector_select"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "Msg_id",
+            "type": "text"
+          },
+          {
+            "name": "Conversation_pin",
+            "type": "text"
+          },
+          {
+            "name": "query_messages",
+            "type": "object",
+            "sub": [
+              {
+                "name": "ChatText",
+                "type": "text"
+              },
+              {
+                "name": "Chat_Type",
+                "type": "text"
+              },
+              {
+                "name": "id",
+                "type": "text"
+              },
+              {
+                "name": "FirstName",
+                "type": "text"
+              },
+              {
+                "name": "LastName",
+                "type": "text"
+              },
+              {
+                "name": "Creation_date",
+                "type": "datetime"
+              }
+            ]
+          },
+          {
+            "name": "query_messages_attachments",
+            "type": "array",
+            "sub": [
+              {
+                "name": "FileName",
+                "type": "text"
+              },
+              {
+                "name": "FileUrl",
+                "type": "text"
+              }
+            ]
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

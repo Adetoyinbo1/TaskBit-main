@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "Email"
+      },
+      {
+        "type": "text",
+        "name": "Pasword"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "identity",
+      "module": "auth",
+      "action": "login",
+      "options": {
+        "provider": "security",
+        "username": "{{$_POST.Email}}",
+        "password": "{{$_POST.Pasword.sha512('slut')}}"
+      },
+      "output": true,
+      "meta": []
+    }
+  }
+}

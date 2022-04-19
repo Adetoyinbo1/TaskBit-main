@@ -1,0 +1,445 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/layouts/AppTemplate.ejs",
+      "linkedForm": "New_task_chat_form"
+    },
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "fieldName": "companyid",
+        "name": "companyid"
+      },
+      {
+        "type": "text",
+        "fieldName": "Task_chat_invites_users_id[]",
+        "multiple": true,
+        "name": "Task_chat_invites_users_id"
+      },
+      {
+        "type": "text",
+        "fieldName": "Task_select",
+        "name": "Task_select"
+      },
+      {
+        "type": "array",
+        "name": "record",
+        "sub": [
+          {
+            "type": "text",
+            "name": "insert_conversation"
+          },
+          {
+            "type": "text",
+            "name": "$value"
+          }
+        ]
+      },
+      {
+        "type": "number",
+        "name": "Taskid"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": true,
+        "meta": []
+      },
+      {
+        "name": "query_Task",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Tasks",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Tasks"
+            },
+            "joins": [],
+            "query": "SELECT id\nFROM Tasks\nWHERE id = :P1 /* {{$_POST.Task_select}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.Task_select}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Tasks.id",
+                  "field": "Tasks.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.Task_select}}",
+                  "data": {
+                    "table": "Tasks",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "query_company",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Company_Account",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Company_Account"
+            },
+            "joins": [],
+            "query": "SELECT id\nFROM Company_Account\nWHERE id = :P1 /* {{$_POST.companyid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.companyid}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Company_Account.id",
+                  "field": "Company_Account.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.companyid}}",
+                  "data": {
+                    "table": "Company_Account",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "update",
+        "module": "dbupdater",
+        "action": "update",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "update",
+            "values": [
+              {
+                "table": "Tasks",
+                "column": "Chat_started",
+                "type": "boolean",
+                "value": "1"
+              }
+            ],
+            "table": "Tasks",
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "id",
+                  "field": "id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.Taskid}}",
+                  "data": {
+                    "column": "id"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "UPDATE Tasks\nSET Chat_started = '1'\nWHERE id = :P1 /* {{$_POST.Taskid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.Taskid}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "insert_conversation",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Conversation",
+                "column": "Type",
+                "type": "text",
+                "value": "Task"
+              },
+              {
+                "table": "Conversation",
+                "column": "Creator",
+                "type": "text",
+                "value": "{{identity}}"
+              },
+              {
+                "table": "Conversation",
+                "column": "TaskId",
+                "type": "text",
+                "value": "{{query_Task.id}}"
+              },
+              {
+                "table": "Conversation",
+                "column": "Companyid",
+                "type": "text",
+                "value": "{{query_company.id}}"
+              }
+            ],
+            "table": "Conversation",
+            "returning": "id",
+            "query": "INSERT INTO Conversation\n(Type, Creator, TaskId, Companyid) VALUES ('Task', :P1 /* {{identity}} */, :P2 /* {{query_Task.id}} */, :P3 /* {{query_company.id}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{identity}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{query_Task.id}}"
+              },
+              {
+                "name": ":P3",
+                "type": "expression",
+                "value": "{{query_company.id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "insert_participant_currentUser",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Participants",
+                "column": "ConversationId",
+                "type": "text",
+                "value": "{{insert_conversation.identity}}"
+              },
+              {
+                "table": "Participants",
+                "column": "UserId",
+                "type": "text",
+                "value": "{{identity}}"
+              }
+            ],
+            "table": "Participants",
+            "returning": "id",
+            "query": "INSERT INTO Participants\n(ConversationId, UserId) VALUES (:P1 /* {{insert_conversation.identity}} */, :P2 /* {{identity}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{insert_conversation.identity}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{identity}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "repeat_other_participants",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{$_POST.Task_chat_invites_users_id.split(',')}}",
+          "outputFields": [],
+          "exec": {
+            "steps": {
+              "name": "insert_participants",
+              "module": "dbupdater",
+              "action": "insert",
+              "options": {
+                "connection": "db",
+                "sql": {
+                  "type": "insert",
+                  "values": [
+                    {
+                      "table": "Participants",
+                      "column": "ConversationId",
+                      "type": "text",
+                      "value": "{{insert_conversation.identity}}"
+                    },
+                    {
+                      "table": "Participants",
+                      "column": "UserId",
+                      "type": "text",
+                      "value": "{{$value}}"
+                    }
+                  ],
+                  "table": "Participants",
+                  "returning": "id",
+                  "query": "INSERT INTO Participants\n(ConversationId, UserId) VALUES (:P1 /* {{insert_conversation.identity}} */, :P2 /* {{$value}} */)",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{insert_conversation.identity}}"
+                    },
+                    {
+                      "name": ":P2",
+                      "type": "expression",
+                      "value": "{{$value}}"
+                    }
+                  ]
+                }
+              },
+              "meta": [
+                {
+                  "name": "identity",
+                  "type": "text"
+                },
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Conversation/Chat_list_display/Task_conversation_list"
+        }
+      }
+    ]
+  }
+}

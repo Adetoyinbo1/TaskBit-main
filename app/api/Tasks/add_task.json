@@ -1,0 +1,631 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "TaskTitle"
+      },
+      {
+        "type": "datetime",
+        "name": "DueDate"
+      },
+      {
+        "type": "text",
+        "name": "Type"
+      },
+      {
+        "type": "file",
+        "name": "Avatar",
+        "sub": [
+          {
+            "type": "text",
+            "name": "name"
+          },
+          {
+            "type": "text",
+            "name": "type"
+          },
+          {
+            "type": "number",
+            "name": "size"
+          },
+          {
+            "type": "text",
+            "name": "error"
+          }
+        ],
+        "outputType": "file"
+      },
+      {
+        "type": "datetime",
+        "name": "Date_Created"
+      },
+      {
+        "type": "text",
+        "name": "CompanyId"
+      },
+      {
+        "type": "text",
+        "name": "ReferenceTaskId"
+      },
+      {
+        "type": "text",
+        "name": "Task_description"
+      },
+      {
+        "type": "datetime",
+        "name": "Final_date"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "upload",
+        "module": "upload",
+        "action": "upload",
+        "options": {
+          "fields": "{{$_POST.Avatar}}",
+          "path": "/public/assets/Img"
+        },
+        "meta": [
+          {
+            "name": "name",
+            "type": "text"
+          },
+          {
+            "name": "path",
+            "type": "text"
+          },
+          {
+            "name": "url",
+            "type": "text"
+          },
+          {
+            "name": "type",
+            "type": "text"
+          },
+          {
+            "name": "size",
+            "type": "text"
+          },
+          {
+            "name": "error",
+            "type": "number"
+          }
+        ],
+        "outputType": "file"
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{$_POST.ReferenceTaskId == 0 || null}}",
+          "then": {
+            "steps": [
+              {
+                "name": "query",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Company_Account",
+                        "column": "id"
+                      }
+                    ],
+                    "table": {
+                      "name": "Company_Account"
+                    },
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Company_Account.id",
+                          "field": "Company_Account.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{$_POST.CompanyId}}",
+                          "data": {
+                            "table": "Company_Account",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT id\nFROM Company_Account\nWHERE id = :P1 /* {{$_POST.CompanyId}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{$_POST.CompanyId}}"
+                      }
+                    ]
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "insert",
+                "module": "dbupdater",
+                "action": "insert",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "insert",
+                    "values": [
+                      {
+                        "table": "Tasks",
+                        "column": "TaskTitle",
+                        "type": "text",
+                        "value": "{{$_POST.TaskTitle}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Type",
+                        "type": "text",
+                        "value": "{{$_POST.Type}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "AvatarName",
+                        "type": "text",
+                        "value": "{{upload.name}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "AvatarUrl",
+                        "type": "text",
+                        "value": "{{upload.url}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "AvatarPath",
+                        "type": "text",
+                        "value": "{{upload.path}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Date_Created",
+                        "type": "datetime",
+                        "value": "{{NOW}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "CompanyId",
+                        "type": "text",
+                        "value": "{{query.id}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Task_description",
+                        "type": "text",
+                        "value": "{{$_POST.Task_description}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "CreatorID",
+                        "type": "text",
+                        "value": "{{security.identity}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Final_date",
+                        "type": "datetime",
+                        "value": "{{$_POST.Final_date}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Chat_started",
+                        "type": "boolean",
+                        "value": "0"
+                      }
+                    ],
+                    "table": "Tasks",
+                    "returning": "id",
+                    "query": "INSERT INTO Tasks\n(TaskTitle, Type, AvatarName, AvatarUrl, AvatarPath, Date_Created, CompanyId, Task_description, CreatorID, Final_date, Chat_started) VALUES (:P1 /* {{$_POST.TaskTitle}} */, :P2 /* {{$_POST.Type}} */, :P3 /* {{upload.name}} */, :P4 /* {{upload.url}} */, :P5 /* {{upload.path}} */, :P6 /* {{NOW}} */, :P7 /* {{query.id}} */, :P8 /* {{$_POST.Task_description}} */, :P9 /* {{security.identity}} */, :P10 /* {{$_POST.Final_date}} */, '0')",
+                    "params": [
+                      {
+                        "name": ":P1",
+                        "type": "expression",
+                        "value": "{{$_POST.TaskTitle}}"
+                      },
+                      {
+                        "name": ":P2",
+                        "type": "expression",
+                        "value": "{{$_POST.Type}}"
+                      },
+                      {
+                        "name": ":P3",
+                        "type": "expression",
+                        "value": "{{upload.name}}"
+                      },
+                      {
+                        "name": ":P4",
+                        "type": "expression",
+                        "value": "{{upload.url}}"
+                      },
+                      {
+                        "name": ":P5",
+                        "type": "expression",
+                        "value": "{{upload.path}}"
+                      },
+                      {
+                        "name": ":P6",
+                        "type": "expression",
+                        "value": "{{NOW}}"
+                      },
+                      {
+                        "name": ":P7",
+                        "type": "expression",
+                        "value": "{{query.id}}"
+                      },
+                      {
+                        "name": ":P8",
+                        "type": "expression",
+                        "value": "{{$_POST.Task_description}}"
+                      },
+                      {
+                        "name": ":P9",
+                        "type": "expression",
+                        "value": "{{security.identity}}"
+                      },
+                      {
+                        "name": ":P10",
+                        "type": "expression",
+                        "value": "{{$_POST.Final_date}}"
+                      }
+                    ]
+                  }
+                },
+                "meta": [
+                  {
+                    "name": "identity",
+                    "type": "text"
+                  },
+                  {
+                    "name": "affected",
+                    "type": "number"
+                  }
+                ]
+              },
+              {
+                "name": "task_id",
+                "module": "core",
+                "action": "setvalue",
+                "options": {
+                  "key": "task_id",
+                  "value": "{{insert.identity}}"
+                },
+                "output": true
+              }
+            ]
+          },
+          "else": {
+            "steps": [
+              {
+                "name": "query_copy",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Company_Account",
+                        "column": "id"
+                      }
+                    ],
+                    "table": {
+                      "name": "Company_Account"
+                    },
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Company_Account.id",
+                          "field": "Company_Account.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{$_POST.CompanyId}}",
+                          "data": {
+                            "table": "Company_Account",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT id\nFROM Company_Account\nWHERE id = :P1 /* {{$_POST.CompanyId}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{$_POST.CompanyId}}"
+                      }
+                    ]
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "query_refrence_task",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Tasks",
+                        "column": "id"
+                      }
+                    ],
+                    "table": {
+                      "name": "Tasks"
+                    },
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Tasks.id",
+                          "field": "Tasks.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{$_POST.ReferenceTaskId}}",
+                          "data": {
+                            "table": "Company_Account",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT id\nFROM Tasks\nWHERE id = :P1 /* {{$_POST.ReferenceTaskId}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{$_POST.ReferenceTaskId}}"
+                      }
+                    ]
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "insert_copy",
+                "module": "dbupdater",
+                "action": "insert",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "insert",
+                    "values": [
+                      {
+                        "table": "Tasks",
+                        "column": "TaskTitle",
+                        "type": "text",
+                        "value": "{{$_POST.TaskTitle}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Type",
+                        "type": "text",
+                        "value": "{{$_POST.Type}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "AvatarName",
+                        "type": "text",
+                        "value": "{{upload.name}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "AvatarUrl",
+                        "type": "text",
+                        "value": "{{upload.url}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "AvatarPath",
+                        "type": "text",
+                        "value": "{{upload.path}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Date_Created",
+                        "type": "datetime",
+                        "value": "{{NOW}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "CompanyId",
+                        "type": "text",
+                        "value": "{{query.id}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "ReferenceTaskId",
+                        "type": "text",
+                        "value": "{{query_refrence_task.id}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Task_description",
+                        "type": "text",
+                        "value": "{{$_POST.Task_description}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "CreatorID",
+                        "type": "text",
+                        "value": "{{security.identity}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Final_date",
+                        "type": "datetime",
+                        "value": "{{$_POST.Final_date}}"
+                      },
+                      {
+                        "table": "Tasks",
+                        "column": "Chat_started",
+                        "type": "boolean",
+                        "value": "0"
+                      }
+                    ],
+                    "table": "Tasks",
+                    "returning": "id",
+                    "query": "INSERT INTO Tasks\n(TaskTitle, Type, AvatarName, AvatarUrl, AvatarPath, Date_Created, CompanyId, ReferenceTaskId, Task_description, CreatorID, Final_date, Chat_started) VALUES (:P1 /* {{$_POST.TaskTitle}} */, :P2 /* {{$_POST.Type}} */, :P3 /* {{upload.name}} */, :P4 /* {{upload.url}} */, :P5 /* {{upload.path}} */, :P6 /* {{NOW}} */, :P7 /* {{query.id}} */, :P8 /* {{query_refrence_task.id}} */, :P9 /* {{$_POST.Task_description}} */, :P10 /* {{security.identity}} */, :P11 /* {{$_POST.Final_date}} */, '0')",
+                    "params": [
+                      {
+                        "name": ":P1",
+                        "type": "expression",
+                        "value": "{{$_POST.TaskTitle}}"
+                      },
+                      {
+                        "name": ":P2",
+                        "type": "expression",
+                        "value": "{{$_POST.Type}}"
+                      },
+                      {
+                        "name": ":P3",
+                        "type": "expression",
+                        "value": "{{upload.name}}"
+                      },
+                      {
+                        "name": ":P4",
+                        "type": "expression",
+                        "value": "{{upload.url}}"
+                      },
+                      {
+                        "name": ":P5",
+                        "type": "expression",
+                        "value": "{{upload.path}}"
+                      },
+                      {
+                        "name": ":P6",
+                        "type": "expression",
+                        "value": "{{NOW}}"
+                      },
+                      {
+                        "name": ":P7",
+                        "type": "expression",
+                        "value": "{{query.id}}"
+                      },
+                      {
+                        "name": ":P8",
+                        "type": "expression",
+                        "value": "{{query_refrence_task.id}}"
+                      },
+                      {
+                        "name": ":P9",
+                        "type": "expression",
+                        "value": "{{$_POST.Task_description}}"
+                      },
+                      {
+                        "name": ":P10",
+                        "type": "expression",
+                        "value": "{{security.identity}}"
+                      },
+                      {
+                        "name": ":P11",
+                        "type": "expression",
+                        "value": "{{$_POST.Final_date}}"
+                      }
+                    ]
+                  }
+                },
+                "meta": [
+                  {
+                    "name": "identity",
+                    "type": "text"
+                  },
+                  {
+                    "name": "affected",
+                    "type": "number"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "outputType": "boolean"
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Tasks/All_tasks_query"
+        }
+      },
+      {
+        "name": "refresh_copy",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Tasks/Added_task_edit_query"
+        }
+      }
+    ]
+  }
+}

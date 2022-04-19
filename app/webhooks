@@ -1,0 +1,163 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "companyid"
+      },
+      {
+        "type": "text",
+        "name": "taskstatus"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_currentUser_Tasks",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Process",
+                "column": "TaskId"
+              },
+              {
+                "table": "Tasks",
+                "column": "TaskTitle"
+              },
+              {
+                "table": "Tasks",
+                "column": "AvatarUrl"
+              },
+              {
+                "table": "Tasks",
+                "column": "Final_date"
+              }
+            ],
+            "table": {
+              "name": "Process"
+            },
+            "joins": [
+              {
+                "table": "Tasks",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Tasks",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Process",
+                        "column": "TaskId"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Tasks.ReferenceTaskId",
+                  "field": "Tasks.ReferenceTaskId",
+                  "type": "string",
+                  "operator": "is_null",
+                  "value": null,
+                  "data": {
+                    "table": "Tasks",
+                    "column": "ReferenceTaskId",
+                    "type": "text"
+                  },
+                  "operation": "IS NULL"
+                },
+                {
+                  "id": "Process.AssignedUserID",
+                  "field": "Process.AssignedUserID",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "AssignedUserID",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Tasks.CompanyId",
+                  "field": "Tasks.CompanyId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_GET.companyid}}",
+                  "data": {
+                    "table": "Tasks",
+                    "column": "CompanyId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT DISTINCT Process.TaskId, Tasks.TaskTitle, Tasks.AvatarUrl, Tasks.Final_date\nFROM Process\nINNER JOIN Tasks ON (Tasks.id = Process.TaskId)\nWHERE Tasks.ReferenceTaskId IS NULL AND Process.AssignedUserID = :P1 /* {{security.identity}} */ AND Tasks.CompanyId = :P2 /* {{$_GET.companyid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{security.identity}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{$_GET.companyid}}"
+              }
+            ],
+            "distinct": true
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "TaskId",
+            "type": "text"
+          },
+          {
+            "name": "TaskTitle",
+            "type": "text"
+          },
+          {
+            "name": "AvatarUrl",
+            "type": "text"
+          },
+          {
+            "name": "Final_date",
+            "type": "datetime"
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

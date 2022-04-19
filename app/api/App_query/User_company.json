@@ -1,0 +1,317 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "companyid"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "User",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Users",
+                "column": "FirstName"
+              },
+              {
+                "table": "Users",
+                "column": "LastName"
+              },
+              {
+                "table": "Users",
+                "column": "Email"
+              },
+              {
+                "table": "Users",
+                "column": "Role"
+              },
+              {
+                "table": "Users",
+                "column": "Create_Update_team_Tasks"
+              },
+              {
+                "table": "Users",
+                "column": "Create_Update_team_Events"
+              },
+              {
+                "table": "Users",
+                "column": "Account_settings_and_subscription"
+              },
+              {
+                "table": "Users",
+                "column": "Company_founder"
+              },
+              {
+                "table": "Users",
+                "column": "imgUrl"
+              },
+              {
+                "table": "Users",
+                "column": "imgName"
+              },
+              {
+                "table": "Users",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Users"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Users.id",
+                  "field": "Users.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Users",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT FirstName, LastName, Email, Role, Create_Update_team_Tasks, Create_Update_team_Events, Account_settings_and_subscription, Company_founder, imgUrl, imgName, id\nFROM Users\nWHERE id = :P1 /* {{security.identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{security.identity}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "FirstName",
+            "type": "text"
+          },
+          {
+            "name": "LastName",
+            "type": "text"
+          },
+          {
+            "name": "Email",
+            "type": "text"
+          },
+          {
+            "name": "Role",
+            "type": "text"
+          },
+          {
+            "name": "Create_Update_team_Tasks",
+            "type": "boolean"
+          },
+          {
+            "name": "Create_Update_team_Events",
+            "type": "boolean"
+          },
+          {
+            "name": "Account_settings_and_subscription",
+            "type": "boolean"
+          },
+          {
+            "name": "Company_founder",
+            "type": "boolean"
+          },
+          {
+            "name": "imgUrl",
+            "type": "text"
+          },
+          {
+            "name": "imgName",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "type": "dbconnector_single",
+        "outputType": "object"
+      },
+      {
+        "name": "Company",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Company_Account",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Company_Account"
+            },
+            "joins": [],
+            "query": "SELECT id\nFROM Company_Account\nWHERE id = :P1 /* {{$_GET.companyid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_GET.companyid}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Company_Account.id",
+                  "field": "Company_Account.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_GET.companyid}}",
+                  "data": {
+                    "table": "Company_Account",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "type": "dbconnector_single",
+        "outputType": "object"
+      },
+      {
+        "name": "User_company",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Companies_users",
+                "column": "userId"
+              },
+              {
+                "table": "Company_Account",
+                "column": "CompanyName"
+              },
+              {
+                "table": "Company_Account",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Companies_users"
+            },
+            "joins": [
+              {
+                "table": "Company_Account",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Company_Account",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Companies_users",
+                        "column": "CompanyId"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "query": "SELECT Companies_users.userId, Company_Account.CompanyName, Company_Account.id\nFROM Companies_users\nINNER JOIN Company_Account ON (Company_Account.id = Companies_users.CompanyId)\nWHERE Companies_users.userId = :P1 /* {{security.identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{security.identity}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Companies_users.userId",
+                  "field": "Companies_users.userId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Companies_users",
+                    "column": "userId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "userId",
+            "type": "text"
+          },
+          {
+            "name": "CompanyName",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "type": "dbconnector_select",
+        "outputType": "array"
+      }
+    ]
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "companyid"
+      },
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_processes",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Process",
+                "column": "id"
+              },
+              {
+                "table": "Process",
+                "column": "ProcessTitle"
+              }
+            ],
+            "table": {
+              "name": "Process"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Process.Companyid",
+                  "field": "Process.Companyid",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_GET.companyid}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "Companyid",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Process.AssignedUserID",
+                  "field": "Process.AssignedUserID",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "AssignedUserID",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Process.Chat_started",
+                  "field": "Process.Chat_started",
+                  "type": "boolean",
+                  "operator": "equal",
+                  "value": false,
+                  "data": {
+                    "table": "Process",
+                    "column": "Chat_started",
+                    "type": "boolean"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT id, ProcessTitle\nFROM Process\nWHERE Companyid = :P1 /* {{$_GET.companyid}} */ AND AssignedUserID = :P2 /* {{security.identity}} */ AND Chat_started = false",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_GET.companyid}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{security.identity}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "ProcessTitle",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

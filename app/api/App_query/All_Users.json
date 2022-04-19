@@ -1,0 +1,195 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "number",
+        "name": "companyid"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "query",
+      "module": "dbconnector",
+      "action": "select",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "Companies_users",
+              "column": "userId"
+            },
+            {
+              "table": "Users",
+              "column": "FirstName"
+            },
+            {
+              "table": "Users",
+              "column": "LastName"
+            },
+            {
+              "table": "Users",
+              "column": "Email"
+            },
+            {
+              "table": "Users",
+              "column": "Role"
+            },
+            {
+              "table": "Users",
+              "column": "Create_Update_team_Tasks"
+            },
+            {
+              "table": "Users",
+              "column": "Create_Update_team_Events"
+            },
+            {
+              "table": "Users",
+              "column": "Account_settings_and_subscription"
+            },
+            {
+              "table": "Users",
+              "column": "Company_founder"
+            },
+            {
+              "table": "Users",
+              "column": "imgUrl"
+            },
+            {
+              "table": "Users",
+              "column": "imgName"
+            },
+            {
+              "table": "Users",
+              "column": "imgPath"
+            },
+            {
+              "table": "Users",
+              "column": "id"
+            }
+          ],
+          "table": {
+            "name": "Companies_users"
+          },
+          "joins": [
+            {
+              "table": "Users",
+              "column": "*",
+              "type": "INNER",
+              "clauses": {
+                "condition": "AND",
+                "rules": [
+                  {
+                    "table": "Users",
+                    "column": "id",
+                    "operator": "equal",
+                    "value": {
+                      "table": "Companies_users",
+                      "column": "userId"
+                    },
+                    "operation": "="
+                  }
+                ]
+              }
+            }
+          ],
+          "wheres": {
+            "condition": "AND",
+            "rules": [
+              {
+                "id": "Companies_users.CompanyId",
+                "field": "Companies_users.CompanyId",
+                "type": "string",
+                "operator": "equal",
+                "value": "{{$_GET.companyid}}",
+                "data": {
+                  "table": "Companies_users",
+                  "column": "CompanyId",
+                  "type": "text"
+                },
+                "operation": "="
+              }
+            ],
+            "conditional": null,
+            "valid": true
+          },
+          "query": "SELECT Companies_users.userId, Users.FirstName, Users.LastName, Users.Email, Users.Role, Users.Create_Update_team_Tasks, Users.Create_Update_team_Events, Users.Account_settings_and_subscription, Users.Company_founder, Users.imgUrl, Users.imgName, Users.imgPath, Users.id\nFROM Companies_users\nINNER JOIN Users ON (Users.id = Companies_users.userId)\nWHERE Companies_users.CompanyId = :P1 /* {{$_GET.companyid}} */",
+          "params": [
+            {
+              "operator": "equal",
+              "type": "expression",
+              "name": ":P1",
+              "value": "{{$_GET.companyid}}"
+            }
+          ]
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "name": "userId",
+          "type": "text"
+        },
+        {
+          "name": "FirstName",
+          "type": "text"
+        },
+        {
+          "name": "LastName",
+          "type": "text"
+        },
+        {
+          "name": "Email",
+          "type": "text"
+        },
+        {
+          "name": "Role",
+          "type": "text"
+        },
+        {
+          "name": "Create_Update_team_Tasks",
+          "type": "boolean"
+        },
+        {
+          "name": "Create_Update_team_Events",
+          "type": "boolean"
+        },
+        {
+          "name": "Account_settings_and_subscription",
+          "type": "boolean"
+        },
+        {
+          "name": "Company_founder",
+          "type": "boolean"
+        },
+        {
+          "name": "imgUrl",
+          "type": "text"
+        },
+        {
+          "name": "imgName",
+          "type": "text"
+        },
+        {
+          "name": "imgPath",
+          "type": "text"
+        },
+        {
+          "name": "id",
+          "type": "text"
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

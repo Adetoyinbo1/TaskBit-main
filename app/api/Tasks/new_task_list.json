@@ -1,0 +1,205 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "multiple": true,
+        "name": "task_ids"
+      }
+    ],
+    "$_COOKIE": [
+      {
+        "type": "array",
+        "name": "new",
+        "sub": [
+          {
+            "type": "text",
+            "name": "id"
+          }
+        ]
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "repeat",
+      "module": "core",
+      "action": "repeat",
+      "options": {
+        "repeat": "{{$_GET.task_ids.split(',')}}",
+        "outputFields": [],
+        "exec": {
+          "steps": {
+            "name": "query",
+            "module": "dbconnector",
+            "action": "single",
+            "options": {
+              "connection": "db",
+              "sql": {
+                "type": "SELECT",
+                "columns": [
+                  {
+                    "table": "Tasks",
+                    "column": "TaskTitle"
+                  },
+                  {
+                    "table": "Tasks",
+                    "column": "DueDate"
+                  },
+                  {
+                    "table": "Tasks",
+                    "column": "Type"
+                  },
+                  {
+                    "table": "Tasks",
+                    "column": "AvatarUrl"
+                  },
+                  {
+                    "table": "Tasks",
+                    "column": "Date_Created"
+                  },
+                  {
+                    "table": "Tasks",
+                    "column": "Task_description"
+                  },
+                  {
+                    "table": "Tasks",
+                    "column": "id"
+                  }
+                ],
+                "table": {
+                  "name": "Tasks"
+                },
+                "joins": [],
+                "wheres": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "id": "Tasks.id",
+                      "field": "Tasks.id",
+                      "type": "double",
+                      "operator": "equal",
+                      "value": "{{$value}}",
+                      "data": {
+                        "table": "Tasks",
+                        "column": "id",
+                        "type": "number"
+                      },
+                      "operation": "="
+                    }
+                  ],
+                  "conditional": null,
+                  "valid": true
+                },
+                "query": "SELECT TaskTitle, DueDate, Type, AvatarUrl, Date_Created, Task_description, id\nFROM Tasks\nWHERE id = :P1 /* {{$value}} */",
+                "params": [
+                  {
+                    "operator": "equal",
+                    "type": "expression",
+                    "name": ":P1",
+                    "value": "{{$value}}"
+                  }
+                ]
+              }
+            },
+            "output": true,
+            "meta": [
+              {
+                "name": "TaskTitle",
+                "type": "text"
+              },
+              {
+                "name": "DueDate",
+                "type": "datetime"
+              },
+              {
+                "name": "Type",
+                "type": "text"
+              },
+              {
+                "name": "AvatarUrl",
+                "type": "text"
+              },
+              {
+                "name": "Date_Created",
+                "type": "datetime"
+              },
+              {
+                "name": "Task_description",
+                "type": "text"
+              },
+              {
+                "name": "id",
+                "type": "text"
+              }
+            ],
+            "outputType": "object",
+            "type": "dbconnector_single"
+          }
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "name": "$index",
+          "type": "number"
+        },
+        {
+          "name": "$number",
+          "type": "number"
+        },
+        {
+          "name": "$name",
+          "type": "text"
+        },
+        {
+          "name": "$value",
+          "type": "object"
+        },
+        {
+          "name": "query",
+          "type": "object",
+          "sub": [
+            {
+              "name": "TaskTitle",
+              "type": "text"
+            },
+            {
+              "name": "DueDate",
+              "type": "datetime"
+            },
+            {
+              "name": "Type",
+              "type": "text"
+            },
+            {
+              "name": "AvatarUrl",
+              "type": "text"
+            },
+            {
+              "name": "Date_Created",
+              "type": "datetime"
+            },
+            {
+              "name": "Task_description",
+              "type": "text"
+            },
+            {
+              "name": "id",
+              "type": "text"
+            }
+          ]
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

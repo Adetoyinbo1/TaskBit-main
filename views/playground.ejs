@@ -1,0 +1,11 @@
+<!-- Wappler include is="dmx-app" id="playground" appconnect="local" fontawesome_5="cdn" bootstrap5="local" bootstrap_icons="cdn" moment_2="local with locales" components="{dmxNotifications:{}}" head-page="layouts/LandingTemplate" -->
+<dmx-serverconnect id="serverconnect1" url="/api/NewFile"></dmx-serverconnect>
+<div class="container">
+    <div class="row" is="dmx-repeat" id="repeat1" dmx-bind:repeat="serverconnect1.data.query">
+        <div class="col">
+            <p dmx-text="TaskTitle">Enter your content here</p>
+            <p dmx-html="Task_description">Enter your content here</p>
+        </div>
+    </div>
+</div>
+<meta name="ac:route" content="/playground">

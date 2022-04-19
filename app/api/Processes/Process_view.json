@@ -1,0 +1,147 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "proceesid"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "query_process",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Process",
+                "column": "Chat_started"
+              }
+            ],
+            "table": {
+              "name": "Process"
+            },
+            "joins": [],
+            "query": "SELECT Chat_started\nFROM Process\nWHERE id = :P1 /* {{$_GET.proceesid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_GET.proceesid}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Process.id",
+                  "field": "Process.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_GET.proceesid}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "Chat_started",
+            "type": "boolean"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "query",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "ProcessAttachments",
+                "column": "FileUrl"
+              },
+              {
+                "table": "ProcessAttachments",
+                "column": "FileName"
+              }
+            ],
+            "table": {
+              "name": "ProcessAttachments"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "ProcessAttachments.ProcessID",
+                  "field": "ProcessAttachments.ProcessID",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_GET.proceesid}}",
+                  "data": {
+                    "table": "ProcessAttachments",
+                    "column": "ProcessID",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT FileUrl, FileName\nFROM ProcessAttachments\nWHERE ProcessID = :P1 /* {{$_GET.proceesid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_GET.proceesid}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "FileUrl",
+            "type": "text"
+          },
+          {
+            "name": "FileName",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_Reminders",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Reminder",
+                "column": "ReminderText",
+                "alias": "Description"
+              },
+              {
+                "table": "Reminder",
+                "column": "RemiderTitle"
+              },
+              {
+                "table": "Reminder",
+                "column": "Date"
+              },
+              {
+                "table": "Reminder",
+                "column": "ReminderType"
+              }
+            ],
+            "table": {
+              "name": "Reminder"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Reminder.Creator",
+                  "field": "Reminder.Creator",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Reminder",
+                    "column": "Creator",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT ReminderText AS Description, RemiderTitle, Date, ReminderType\nFROM Reminder\nWHERE Creator = :P1 /* {{security.identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{security.identity}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "Description",
+            "type": "text"
+          },
+          {
+            "name": "RemiderTitle",
+            "type": "text"
+          },
+          {
+            "name": "Date",
+            "type": "datetime"
+          },
+          {
+            "name": "ReminderType",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "convo_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "query",
+      "module": "dbconnector",
+      "action": "single",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "Conversation",
+              "column": "Conversation_pinned_message_id"
+            },
+            {
+              "table": "Conversation",
+              "column": "ProcessTitle"
+            },
+            {
+              "table": "Conversation",
+              "column": "TaskTitle"
+            },
+            {
+              "table": "Conversation",
+              "column": "TaskId"
+            },
+            {
+              "table": "Conversation",
+              "column": "ProcessId"
+            },
+            {
+              "table": "Users",
+              "column": "FirstName"
+            },
+            {
+              "table": "Users",
+              "column": "LastName"
+            },
+            {
+              "table": "Conversation",
+              "column": "Type"
+            },
+            {
+              "table": "Conversation",
+              "column": "id"
+            },
+            {
+              "table": "Users",
+              "column": "id",
+              "alias": "user_id"
+            },
+            {
+              "table": "Conversation",
+              "column": "Conversation_closed"
+            }
+          ],
+          "table": {
+            "name": "Conversation"
+          },
+          "joins": [
+            {
+              "table": "Users",
+              "column": "*",
+              "type": "INNER",
+              "clauses": {
+                "condition": "AND",
+                "rules": [
+                  {
+                    "table": "Users",
+                    "column": "id",
+                    "operator": "equal",
+                    "value": {
+                      "table": "Conversation",
+                      "column": "Creator"
+                    },
+                    "operation": "="
+                  }
+                ]
+              }
+            }
+          ],
+          "wheres": {
+            "condition": "AND",
+            "rules": [
+              {
+                "id": "Conversation.id",
+                "field": "Conversation.id",
+                "type": "double",
+                "operator": "equal",
+                "value": "{{$_GET.convo_id}}",
+                "data": {
+                  "table": "Conversation",
+                  "column": "id",
+                  "type": "number"
+                },
+                "operation": "="
+              }
+            ],
+            "conditional": null,
+            "valid": true
+          },
+          "query": "SELECT Conversation.Conversation_pinned_message_id, Conversation.ProcessTitle, Conversation.TaskTitle, Conversation.TaskId, Conversation.ProcessId, Users.FirstName, Users.LastName, Conversation.Type, Conversation.id, Users.id AS user_id, Conversation.Conversation_closed\nFROM Conversation\nINNER JOIN Users ON (Users.id = Conversation.Creator)\nWHERE Conversation.id = :P1 /* {{$_GET.convo_id}} */",
+          "params": [
+            {
+              "operator": "equal",
+              "type": "expression",
+              "name": ":P1",
+              "value": "{{$_GET.convo_id}}"
+            }
+          ]
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "name": "Conversation_pinned_message_id",
+          "type": "text"
+        },
+        {
+          "name": "ProcessTitle",
+          "type": "text"
+        },
+        {
+          "name": "TaskTitle",
+          "type": "text"
+        },
+        {
+          "name": "TaskId",
+          "type": "text"
+        },
+        {
+          "name": "ProcessId",
+          "type": "text"
+        },
+        {
+          "name": "FirstName",
+          "type": "text"
+        },
+        {
+          "name": "LastName",
+          "type": "text"
+        },
+        {
+          "name": "Type",
+          "type": "text"
+        },
+        {
+          "name": "id",
+          "type": "text"
+        },
+        {
+          "name": "user_id",
+          "type": "text"
+        },
+        {
+          "name": "Conversation_closed",
+          "type": "boolean"
+        }
+      ],
+      "outputType": "object",
+      "type": "dbconnector_single"
+    }
+  }
+}

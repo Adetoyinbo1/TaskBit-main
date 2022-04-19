@@ -1,0 +1,14 @@
+{
+  "signup_page.ejs": {
+    "layoutPage": "LandingTemplate",
+    "description": ""
+  },
+  "App.ejs": {
+    "layoutPage": "AppTemplate",
+    "description": ""
+  },
+  "playground.ejs": {
+    "layoutPage": "LandingTemplate",
+    "description": ""
+  }
+}

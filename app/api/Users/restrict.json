@@ -1,0 +1,9 @@
+{
+  "name": "",
+  "module": "auth",
+  "action": "restrict",
+  "options": {
+    "provider": "security",
+    "loginUrl": "/signup_page"
+  }
+}

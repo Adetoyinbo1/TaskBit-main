@@ -1,0 +1,508 @@
+<!doctype html>
+<html is="dmx-app">
+
+<head>
+    <base href="/">
+    <script src="/dmxAppConnect/dmxAppConnect.js"></script>
+    <meta charset="UTF-8">
+    <title>Untitled Document</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/bootstrap/5/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" integrity="sha384-NUDU7Qr8dfscXBIhA0px/bRl3cgNrOT9l/WPm15DzH5xnBs4fL4vgRiXURs98/ID" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js" integrity="sha256-CutOzxCRucUsn6C6TcEYsauvvYilEniTXldPa6/wu0k=" crossorigin="anonymous"></script>
+    <script src="/dmxAppConnect/dmxRouting/dmxRouting.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxBootstrap5Collapse/dmxBootstrap5Collapse.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxBootstrap5Navigation/dmxBootstrap5Navigation.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxScheduler/dmxScheduler.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxMoment/dmxMoment.js" defer=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/@fullcalendar/core@4.4.2/main.min.css" />
+    <script src="https://unpkg.com/@fullcalendar/core@4.4.2/main.min.js"></script>
+    <script src="https://unpkg.com/@fullcalendar/core@4.4.2/locales-all.min.js"></script>
+    <script src="https://unpkg.com/@fullcalendar/interaction@4.4.2/main.min.js"></script>
+    <script src="https://unpkg.com/@fullcalendar/daygrid@4.4.2/main.min.js"></script>
+    <script src="/dmxAppConnect/dmxCalendar/dmxCalendar.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxFormatter/dmxFormatter.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxBootstrap5Offcanvas/dmxBootstrap5Offcanvas.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxStateManagement/dmxStateManagement.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxBrowser/dmxBrowser.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxSmoothScroll/dmxSmoothScroll.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxBootstrap5Modal/dmxBootstrap5Modal.js" defer=""></script>
+    <link rel="stylesheet" href="/dmxAppConnect/dmxDatePicker/daterangepicker.min.css" />
+    <script src="/dmxAppConnect/dmxDatePicker/daterangepicker.min.js" defer=""></script>
+    <link rel="stylesheet" href="/dmxAppConnect/dmxDatePicker/dmxDatePicker.css" />
+    <script src="/dmxAppConnect/dmxDatePicker/dmxDatePicker.js" defer=""></script>
+
+    <script src="/socket.io/socket.io.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxSockets/dmxSockets.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxBootstrap5Toasts/dmxBootstrap5Toasts.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxDataTraversal/dmxDataTraversal.js" defer=""></script>
+    <link rel="stylesheet" href="/dmxAppConnect/dmxBootstrap5TableGenerator/dmxBootstrap5TableGenerator.css" />
+    <link rel="stylesheet" href="/dmxAppConnect/dmxValidator/dmxValidator.css" />
+    <script src="/dmxAppConnect/dmxValidator/dmxValidator.js" defer=""></script>
+
+    <script src="/dmxAppConnect/dmxBootstrap5Popovers/dmxBootstrap5Popovers.js" defer=""></script>
+    <script src="/dmxAppConnect/dmxBootstrap5Tooltips/dmxBootstrap5Tooltips.js" defer=""></script>
+    <link rel="stylesheet" href="/dmxAppConnect/dmxPreloader/dmxPreloader.css" />
+    <script src="/dmxAppConnect/dmxPreloader/dmxPreloader.js" defer=""></script>
+    <script src="https://js.stripe.com/v3/" defer=""></script>
+    <script src="/dmxAppConnect/dmxStripe/dmxStripe.js" defer=""></script>
+</head>
+
+<body id="AppTemplate">
+    <dmx-stripe id="stripe" key="pk_test_51JLV2cERsMaXFKndl7QZL6qSTV0M6VowSyFyxEaEKC4vSju5Qfqqq0QFTrYrMt28srviZQkJHE6lhH1pAE13fXkk00RWxKmtzL" checkout="server" session-url="/api/Subscription/Subscribe_user"></dmx-stripe>
+
+    <dmx-serverconnect id="user_company" url="/api/App_query/User_company" sockets="true" dmx-param:companyid="company_select.value"></dmx-serverconnect>
+    <dmx-serverconnect id="All_tasks_query" url="/api/Tasks/UserTasks/All_tasks_query" dmx-param:companyid="content.company_select.value" dmx-param:task_status="Task_status_4_userTask.value"></dmx-serverconnect>
+    <dmx-serverconnect id="Direct_conversation_chat_list" url="/api/Conversation/Chat_list_display/Direct_chats" sockets="true"></dmx-serverconnect>
+    <dmx-serverconnect id="Process_conversation_chat_list" url="/api/Conversation/Chat_list_display/Process_conversation_list"></dmx-serverconnect>
+    <dmx-socket id="socket1">
+
+    </dmx-socket>
+    <div class="modal" id="Notifications" is="dmx-bs5-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Notifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row" is="dmx-repeat" id="repeat_notifications" dmx-bind:repeat="Notification.data.query">
+                            <div class="d-flex align-items-center col-12 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <img width="40" height="40" class="rounded-circle" dmx-bind:src="creatorImg" dmx-show="Conversationi_id">
+                                    <div class="d-flex notif-icon-circle justify-content-center align-items-center notif-icon-circle-green" dmx-show="Task_id">
+                                        <i class="bi-info-circle-fill center-icon"></i>
+                                    </div>
+                                    <div class="d-flex notif-icon-circle justify-content-center align-items-center notif-icon-circle-pink" dmx-show="Reminder_id">
+                                        <i class="bi-bell center-icon"></i>
+                                    </div>
+                                    <div class="d-flex notif-icon-circle justify-content-center align-items-center notif-icon-circle-dark" dmx-show="Notification_text.contains('You have been invited to an event by')">
+                                        <i class="bi-calendar-plus center-icon"></i>
+                                    </div>
+                                    <div class="d-flex notif-icon-circle justify-content-center align-items-center notif-icon-circle-purple" dmx-show="Notification_text.startsWith('Event')">
+                                        <i class="bi-megaphone center-icon"></i>
+                                    </div>
+                                </div>
+                                <p class="ms-2 w-100" dmx-html="Notification_text">Enter your content here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <div class="modal" id="Events" is="dmx-bs5-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create new events</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <dmx-array id="Users_list"></dmx-array>
+                    <form id="Event_form" is="dmx-serverconnect-form" method="post" action="/api/Events/Create_event" dmx-on:success="toasts.show({message: 'Event created'});Events.hide();Events.Event_form.reset()">
+                        <div class="mb-3">
+                            <label for="EventTitle" class="form-label">Event title</label>
+                            <input type="text" class="form-control" id="EventTitle" name="EventTitle" aria-describedby="input1_help">
+                        </div>
+                        <div class="mb-3">
+                            <label for="EventDescription" class="form-label">Event description</label>
+                            <textarea id="EventDescription" class="form-control" name="Description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="EventDate" class="form-label">Date</label>
+                            <input type="datetime-local" class="form-control" id="EventDate" name="EventDate" aria-describedby="input1_help">
+                            <input id="User_ids" name="Users[]" class="form-control" dmx-bind:value="Users_list.items" required="" type="hidden">
+                            <input id="company_id" name="companyid" class="form-control" dmx-bind:value="content.company_select.value" type="hidden">
+                        </div>
+
+                    </form>
+                    <div class="row justify-content-center" id="Users_row">
+                        <div class="col-12 mb-3 d-flex" style="cursor: pointer;" dmx-on:click="NewEmployee.show()">
+                            <p>Select invited users</p>
+                        </div>
+                        <div class="col-12">
+                            <div class="row justify-content-center" is="dmx-repeat" id="Repeat_Users_4_invite" dmx-bind:repeat="All_users.data.query">
+                                <div class="d-flex rounded align-items-center mb-3 pt-2 pb-2 bg-primary col-12" dmx-hide="(userId == user_company.data.User.id)"><img width="30" height="30" class="rounded-circle me-2" src="/assets/Img/avatar-11.jpg" dmx-bind:src="imgUrl">
+                                    <div class="d-flex flex-column">
+                                        <p class="fw-bold" dmx-text="FirstName+' '+LastName">Asad kanten&nbsp;</p>
+                                        <p dmx-text="Role">Sales</p>
+                                    </div>
+                                    <i class="bi-circle icon-left-auto" dmx-on:click="Events.Users_list.add(userId)" dmx-hide="Users_list.items.contains(userId)"></i>
+                                    <i class="bi-check-circle-fill icon-left-auto" dmx-show="Users_list.items.contains(userId)" dmx-on:click="Events.Users_list.remove(userId)"></i>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" dmx-on:click="Events.Event_form.submit()">Create event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container" id="forms">
+        <form id="delete_chat_notification_form" is="dmx-serverconnect-form" method="post" action="/api/Notification/Clear_chat_notifications">
+            <input id="notif_convo_id" name="conversation_id" class="form-control" dmx-bind:value="Conversation_id.value" type="hidden">
+        </form>
+        <form id="Delete_chat_pins" is="dmx-serverconnect-form" method="post" action="/api/Conversation/User_conversation_pins/Delete_chat_pins" dmx-on:success="toasts.show({message: 'Pin deleted', title: 'Success'})">
+            <input id="delete_conversation_pin_id" name="conversation_pin_id" type="hidden" class="form-control">
+        </form>
+        <form id="create_chat_pins" is="dmx-serverconnect-form" method="post" action="/api/Conversation/User_conversation_pins/Create_chat_pins" dmx-on:success="toasts.show({message: 'Message added to chat pins', title: 'Success'});msg_id.setValue(0)">
+            <input id="Create_convo_id" name="convo_id" type="hidden" class="form-control">
+            <input id="Create_msg_id" name="msg_id" type="hidden" class="form-control">
+        </form>
+        <form id="Pin_msg_2_conversation" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Conversations_query/pin_message_conversation" dmx-on:success="toasts.show({message: 'Message pinned', title: 'Success'});msg_id.setValue(0)">
+            <input id="pin_convo_id" name="convo_id" type="hidden" class="form-control">
+            <input id="pin_msg_id" name="msg_id" type="hidden" class="form-control">
+        </form>
+        <form id="new_process_conversation" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Conversation_starters/Process_conversation/Process_conversation_create" dmx-on:success="new_process_conversation.reset();toasts.show({message: 'Process conversation created!'})">
+            <input id="ProcessId_4_chat" name="ProcessId" type="hidden" class="form-control">
+        </form>
+        <form id="new_Task_conversation">
+            <input id="Taskid_4_chat" name="Taskid" type="hidden" class="form-control">
+        </form>
+        <form id="delete_process" is="dmx-serverconnect-form" method="post" action="/api/Processes/Delete_process" dmx-on:success="delete_process.reset()">
+            <input id="d_Process_id" name="Process_id" type="hidden" class="form-control">
+        </form>
+        <form id="delete_task" is="dmx-serverconnect-form" method="post" action="/api/Tasks/delete_task" dmx-on:success="delete_task.reset();toasts.show({message: 'Task deleted!'})">
+            <input id="d_Task_id" name="id" type="hidden" class="form-control">
+        </form>
+    </div>
+    <div is="dmx-view" id="content" class="style11">
+        <section class="layout-section w-100">
+            <div class="container-fluid style20">
+                <div class="row App-Header h-100">
+                    <div class="style26 col-12 col-sm-4 h-100 pt-0 pb-0" dmx-class:bg-secondary="((leftSideBar_toggle.value == 0) &amp;&amp; (browser.viewport.width < 768))" dmx-class:bg-info="(browser.viewport.width >= 768)">
+                        <div class="row h-100">
+                            <div class="h-100 d-flex align-items-center justify-content-start col-4">
+                                <h3 class="mb-0">Taskbit</h3>
+                            </div>
+                            <div class="d-flex col align-items-center justify-content-center">
+                                <select id="company_select" class="form-control" dmx-bind:options="user_company.data.User_company" optiontext="CompanyName" optionvalue="id">
+                                </select>
+
+                                <i class="bi-plus-circle-fill Menu-toggle" style="cursor: pointer;" dmx-on:click="NewCompany.show()"></i>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-end col-3">
+                                <i class="bi-filter-right check-icon" dmx-on:click="offcanvas_Navigation.show()"></i>
+
+                                <div class="d-sm-none"><i class="bi-arrow-left-square-fill Menu-toggle" dmx-on:click="mobile_sideBar.setValue('menu')" dmx-hide="(mobile_sideBar.value == 'menu')"></i></div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-secondary style27 col-5 d-none d-sm-block d-lg-none d-xl-block h-100 col d-flex align-items-md-center pt-md-0 pb-md-0">
+                        <div class="row h-100">
+                            <div class="col d-flex align-items-center justify-content-start" dmx-on:click="Add_task.show()">
+                                <i class="bi-plus-circle-fill style17"></i>
+                                <p class="text-center fw-bold style16">New task</p>
+                            </div>
+                            <div class="col d-flex align-items-center justify-content-end">
+                                <p class="text-center rounded-circle bg-primary style13 fw-bold" dmx-text="Notification.data.query.where(`Conversationi_id`, null, '!==').count()">100</p><i class="bi-chat-left-text Menu-toggle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="style28 col-3 d-none d-sm-block h-100 pt-md-0 pb-md-0">
+                        <div class="row h-100">
+                            <div class="col align-self-center">
+                                <h5 class="mb-0 fw-bold" dmx-text="user_company.data.User.FirstName+' '+user_company.data.User.LastName">Title</h5>
+                            </div>
+                            <div class="col d-flex justify-content-end align-items-center">
+                                <p class="text-center rounded-circle bg-primary style13 fw-bold" dmx-text="Notification.data.query.count()" style="cursor: pointer;" dmx-on:click="Notifications.show()">100</p>
+                                <img class="rounded-circle ms-1" width="30" dmx-bind:src="user_company.data.User.imgUrl" height="30">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%- await include(content, locals) %>
+        </section>
+
+        <section class="nav-sidePanel d-sm-none" is="dmx-if" id="conditional1" dmx-bind:condition="(mobile_sideBar.value == 'menu')">
+            <div class="container wappler-block style21 h-100">
+                <div class="row h-100">
+                    <div class="col-12 d-flex flex-column align-items-center justify-content-start style22 pt-2 ps-0 pe-0">
+                        <i class="bi-arrow-right-square-fill style23" dmx-on:click="mobile_sideBar.setValue(0)"></i>
+                        <div class="d-flex flex-column justify-content-center align-items-center w-100 mt-3"><i class="bi-plus-circle-fill style17"></i>
+                            <p class="text-center fw-bold">New</p>
+                        </div>
+
+
+
+
+                    </div>
+                    <div class="col-12 d-flex flex-column align-items-center justify-content-end pb-2">
+
+                        <p class="text-center rounded-circle bg-primary style13 fw-bold">100</p>
+                        <img src="/assets/Img/avatar-19.jpg" width="30" height="30" class="rounded-circle style14">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+
+    </div>
+    <dmx-array id="New_task_list" dmx-on:updated=""></dmx-array>
+
+
+
+
+
+    <dmx-array id="Dm_userId"></dmx-array>
+    <dmx-array id="chat_participants_id"></dmx-array>
+
+
+
+
+
+
+    <div class="modal" id="Add_process" is="dmx-bs5-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add processes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col">
+                            <form is="dmx-serverconnect-form" id="Add_process__form" method="post" action="/api/Processes/add_processes" dmx-generator="bootstrap5" dmx-form-type="horizontal" dmx-on:success="Add_process__form.reset();toasts.show({message: 'Process added'});Add_process.hide()">
+                                <input class="form-control" id="inp_TaskId" name="TaskId" aria-describedby="inp_TaskId_help" dmx-bind:value="Edit_task_id.value" required="" type="hidden">
+                                <input class="form-control" id="AssignedUserID" name="AssignedUserID" aria-describedby="inp_TaskId_help" required="" type="hidden">
+                                <input id="process_company_id" name="companyid" class="form-control" dmx-bind:value="content.company_select.value" type="hidden">
+                                <div class="mb-3">
+                                    <label for="inp_ProcessTitle" class="form-label">Process title</label>
+                                    <input type="text" class="form-control rounded" id="inp_ProcessTitle" name="ProcessTitle" aria-describedby="input1_help" placeholder="Enter some text">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="inp_ProcessTitle1" class="form-label">Due date</label>
+                                    <input type="date" class="form-control" id="inp_Due_date" name="Due_date" aria-describedby="inp_Due_date_help" placeholder="Enter Due date">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="inp_ProcessTitle1" class="form-label">Attachments</label>
+                                </div><input type="file" class="form-control" id="inp_Attachments" name="Attachments[]" aria-describedby="inp_Attachments_help" multiple="true">
+                            </form>
+                        </div>
+                        <div class="col">
+                            <p class="mb-2">Assign user</p>
+                            <div class="row justify-content-center" is="dmx-repeat" id="Repeat_Users" dmx-bind:repeat="All_users.data.query">
+                                <div class="d-flex rounded align-items-center mb-3 pt-2 pb-2 bg-primary col-11" dmx-on:click="User_id.setValue(id)"><img width="30" height="30" class="rounded-circle me-2" src="/assets/Img/avatar-11.jpg" dmx-bind:src="imgUrl">
+                                    <div class="d-flex flex-column">
+                                        <p class="fw-bold" dmx-text="FirstName+' '+LastName">Asad kanten&nbsp;</p>
+                                        <p dmx-text="Role">Sales</p>
+                                    </div>
+                                    <i class="bi-circle icon-left-auto" dmx-show="(id != Add_process__form.AssignedUserID.value)" dmx-on:click="Add_process__form.AssignedUserID.setValue(id)"></i>
+                                    <i class="bi-check-circle-fill icon-left-auto" dmx-show="(id == Add_process__form.AssignedUserID.value)"></i>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" dmx-on:click="Add_process__form.submit()">Add process</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <dmx-value id="Task_status_4_userTask" dmx-bind:value="0"></dmx-value>
+    <dmx-value id="Conversation_id"></dmx-value>
+    <dmx-value id="Process_id"></dmx-value>
+    <dmx-value id="nd_participant_input_set"></dmx-value>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div is="dmx-bs5-toasts" id="toasts"></div>
+    <div class="modal" id="NewCompany" is="dmx-bs5-modal" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add new company</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="Add_company_form" class="Add_task_form border" is="dmx-serverconnect-form" method="post" action="/api/Company/Add_new_company" dmx-on:success="Add_company_form.reset();toasts.show({message: 'New company Added!', title: 'Success'});NewCompany.hide()">
+                        <div class="mb-3">
+                            <label for="New_CompanyName" class="form-label">Company name</label>
+                            <input type="text" class="form-control rounded" id="New_CompanyName" name="CompanyName" aria-describedby="input1_help">
+                        </div>
+                        <div class="mb-3">
+                            <label for="business_email" class="form-label">Company email</label>
+                            <input type="text" class="form-control rounded" id="business_email" name="company_email" aria-describedby="input1_help" required="" data-rule-email="">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" dmx-on:click="Add_company_form.submit()">Add company</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="NewEmployee" is="dmx-bs5-modal" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add new company</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="Add_Employee_form" class="Add_task_form border" is="dmx-serverconnect-form" method="post" action="/api/Users/Create_user" dmx-on:success="toasts.show({message: 'New Employee Added!', title: 'Success'});NewCompany.Add_company_form.reset();NewEmployee.hide()"><input type="hidden" class="form-control rounded" id="Company" name="CompanyID" aria-describedby="input1_help" dmx-bind:value="content.company_select.value">
+                        <div class="mb-3">
+                            <label for="NewEmployee_FirstName" class="form-label">First name</label>
+                            <input type="text" class="form-control rounded" id="NewEmployee_FirstName" name="FirstName" aria-describedby="input1_help">
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="NewEmployee_LastName" class="form-label">Last name</label>
+                            <input type="text" class="form-control rounded" id="NewEmployee_LastName" name="LastName" aria-describedby="input1_help">
+                        </div>
+                        <div class="mb-3">
+                            <label for="NewEmployee_LastName1" class="form-label">Email</label>
+                            <input type="text" class="form-control rounded" id="NewEmployee_LastName1" name="Email" aria-describedby="input1_help">
+                        </div>
+                        <div class="mb-3">
+                            <label for="NewEmployee_LastName2" class="form-label">Role</label>
+                            <input type="text" class="form-control rounded" id="NewEmployee_LastName2" name="Role" aria-describedby="input1_help">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" dmx-on:click="Add_Employee_form.submit()">Add employee</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal" id="Add_task" is="dmx-bs5-modal" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add new task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="Add_task_form" class="border Add_task_form" is="dmx-serverconnect-form" method="post" action="/api/Tasks/add_task" dmx-on:success="Add_task_form.reset();Add_task.hide();New_task_list.add(Add_task.Add_task_form.data.task_id)">
+                        <input id="CompanyId" name="CompanyId" class="form-control" dmx-bind:value="content.company_select.value" type="hidden">
+                        <input id="ReferenceTaskId" name="ReferenceTaskId" type="hidden" class="form-control" dmx-bind:value="task_id.value">
+                        <div class="mb-3">
+                            <label for="TaskTitle" class="form-label">Task title</label>
+                            <input type="text" class="form-control rounded" id="TaskTitle" name="TaskTitle" aria-describedby="input1_help">
+                        </div>
+                        <div class="mb-3">
+                            <label for="Task_description" class="form-label">Task description</label>
+                            <input type="text" class="form-control rounded" id="Task_description" name="Task_description" aria-describedby="input1_help">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="select_task_type" class="form-label">Task type</label>
+                            <select id="select_task_type" class="form-control rounded" name="Type">
+                                <option value="Personal">Personal</option>
+                                <option value="Team">Team</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="TASK_DueDate" class="form-label">Due date</label>
+                            <input class="form-control rounded" id="TASK_DueDate" name="Final_date" aria-describedby="input1_help" type="text" is="dmx-date-picker" dropsup="true" timepicker="" use24hours="true">
+                        </div>
+                        <div class="d-flex mb-3 align-items-center">
+                            <div class="mb-0">
+                                <label for="task_icon_inp" class="form-label">Task icon</label>
+                                <input type="file" class="form-control" id="task_icon_inp" name="Avatar" aria-describedby="input3_help">
+                            </div>
+                            <img class="rounded-circle ms-3" width="40" height="40" dmx-bind:src="task_icon_inp.file.dataUrl">
+                        </div>
+
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" dmx-on:click="Add_task_form.submit()">Add task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <dmx-smooth-scroll id="scroll1"></dmx-smooth-scroll>
+    <div is="dmx-browser" id="browser"></div>
+
+
+    <div class="offcanvas off-canvas offcanvas-start" id="offcanvas_Navigation" is="dmx-bs5-offcanvas" tabindex="-1">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Navigation</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="d-flex dropDown-menu flex-column">
+                <p class="text-center rounded pt-2 pb-2">Dashboard</p>
+                <p class="text-center rounded mt-2 pt-2 pb-2">Tasks</p>
+                <p class="text-center rounded mt-2 pt-2 pb-2">Chats</p>
+                <p class="text-center rounded mt-2 pt-2 pb-2">Settings</p>
+                <p class="text-center rounded mt-5 pt-2 pb-2 bg-warning" dmx-on:click="log_out.load();browser.goto('/signup_page')">Sign out</p>
+            </div>
+        </div>
+    </div>
+    <dmx-value id="Chat_switch"></dmx-value>
+    <dmx-value id="personal_company_tasks" dmx-bind:value="'my tasks'"></dmx-value>
+    <dmx-value id="task_id"></dmx-value>
+    <dmx-value id="msg_id"></dmx-value>
+    <dmx-value id="Edit_task_id"></dmx-value>
+    <dmx-value id="User_id"></dmx-value>
+    <dmx-value id="hover_var"></dmx-value>
+    <dmx-value id="mobile_sideBar"></dmx-value>
+    <dmx-value id="leftSideBar_toggle" dmx-bind:value="0"></dmx-value>
+    <dmx-serverconnect id="TaskView" url="/api/Tasks/Added_task_edit_query" dmx-param:id="task_id.value" sockets="true"></dmx-serverconnect>
+    <dmx-serverconnect id="new_task_list" url="/api/Tasks/new_task_list" sockets="true" dmx-param:task_ids="New_task_list.items"></dmx-serverconnect>
+    <dmx-serverconnect id="Single_user" url="/api/App_query/Single_user" dmx-param:userid="User_id.value"></dmx-serverconnect>
+    <dmx-serverconnect id="log_out" url="/api/log_out" noload></dmx-serverconnect>
+
+
+    <dmx-serverconnect id="Task_conversation_chat_list" url="/api/Conversation/Chat_list_display/Task_conversation_list" sockets="true"></dmx-serverconnect>
+    <dmx-serverconnect id="All_users" url="/api/App_query/All_Users" dmx-param:companyid="content.company_select.value" sockets="true"></dmx-serverconnect>
+    <dmx-serverconnect id="Users_4_dm" url="/api/Conversation/Chat_list_display/Users_4_dm"></dmx-serverconnect>
+
+    <dmx-serverconnect id="RemindersQuery" url="/api/Reminder/QueryReminder" sockets="true"></dmx-serverconnect>
+
+    <dmx-serverconnect id="current_chat_pins" url="/api/Conversation/User_conversation_pins/Query_chat_pins" dmx-param:companyid="1" dmx-param:task_status="0" dmx-param:convo_id="Conversation_id.value" sockets="true"></dmx-serverconnect>
+
+    <dmx-serverconnect id="All_company_tasks" url="/api/Tasks/All_company_tasks" dmx-param:companyid="content.company_select.value" dmx-param:task_status=""></dmx-serverconnect>
+    <dmx-serverconnect id="Notification" url="/api/Notification/Query_notifications" dmx-param:companyid="content.company_select.value" dmx-param:task_status="" sockets="true"></dmx-serverconnect>
+    <script src="/bootstrap/5/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

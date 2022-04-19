@@ -1,0 +1,60 @@
+[
+  "SecurityProviders/security",
+  {
+    "name": "update",
+    "module": "dbupdater",
+    "action": "update",
+    "options": {
+      "connection": "db",
+      "sql": {
+        "type": "update",
+        "values": [
+          {
+            "table": "Participants",
+            "column": "Online",
+            "type": "boolean",
+            "value": "0"
+          }
+        ],
+        "table": "Participants",
+        "wheres": {
+          "condition": "AND",
+          "rules": [
+            {
+              "id": "UserId",
+              "field": "UserId",
+              "type": "string",
+              "operator": "equal",
+              "value": "1",
+              "data": {
+                "column": "UserId"
+              },
+              "operation": "="
+            },
+            {
+              "id": "Online",
+              "field": "Online",
+              "type": "boolean",
+              "operator": "equal",
+              "value": true,
+              "data": {
+                "column": "Online"
+              },
+              "operation": "="
+            }
+          ],
+          "conditional": null,
+          "valid": true
+        },
+        "query": "UPDATE Participants\nSET Online = '0'\nWHERE UserId = '1' AND Online = true",
+        "params": []
+      }
+    },
+    "meta": [
+      {
+        "name": "affected",
+        "type": "number"
+      }
+    ]
+  }
+]

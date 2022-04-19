@@ -1,0 +1,304 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "FirstName"
+      },
+      {
+        "type": "text",
+        "name": "LastName"
+      },
+      {
+        "type": "text",
+        "name": "Email"
+      },
+      {
+        "type": "text",
+        "name": "Pasword"
+      },
+      {
+        "type": "text",
+        "name": "Role"
+      },
+      {
+        "type": "boolean",
+        "name": "Create_Update_team_Tasks"
+      },
+      {
+        "type": "boolean",
+        "name": "Create_Update_team_Events"
+      },
+      {
+        "type": "boolean",
+        "name": "Account_settings_and_subscription"
+      },
+      {
+        "type": "boolean",
+        "name": "Company_founder"
+      },
+      {
+        "type": "file",
+        "name": "User_img_File",
+        "sub": [
+          {
+            "type": "text",
+            "name": "name"
+          },
+          {
+            "type": "text",
+            "name": "type"
+          },
+          {
+            "type": "number",
+            "name": "size"
+          },
+          {
+            "type": "text",
+            "name": "error"
+          }
+        ],
+        "outputType": "file"
+      },
+      {
+        "type": "number",
+        "name": "id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "upload",
+        "module": "upload",
+        "action": "upload",
+        "options": {
+          "fields": "{{$_POST.User_img_File}}",
+          "path": "/public/assets/Img"
+        },
+        "meta": [
+          {
+            "name": "name",
+            "type": "text"
+          },
+          {
+            "name": "path",
+            "type": "text"
+          },
+          {
+            "name": "url",
+            "type": "text"
+          },
+          {
+            "name": "type",
+            "type": "text"
+          },
+          {
+            "name": "size",
+            "type": "text"
+          },
+          {
+            "name": "error",
+            "type": "number"
+          }
+        ],
+        "outputType": "file"
+      },
+      {
+        "name": "update_user",
+        "module": "dbupdater",
+        "action": "update",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "update",
+            "values": [
+              {
+                "table": "Users",
+                "column": "FirstName",
+                "type": "text",
+                "value": "{{$_POST.FirstName}}"
+              },
+              {
+                "table": "Users",
+                "column": "LastName",
+                "type": "text",
+                "value": "{{$_POST.LastName}}"
+              },
+              {
+                "table": "Users",
+                "column": "Email",
+                "type": "text",
+                "value": "{{$_POST.Email.lowercase()}}"
+              },
+              {
+                "table": "Users",
+                "column": "Pasword",
+                "type": "text",
+                "value": "{{$_POST.Pasword.sha512('slut')}}"
+              },
+              {
+                "table": "Users",
+                "column": "Role",
+                "type": "text",
+                "value": "{{$_POST.Role}}"
+              },
+              {
+                "table": "Users",
+                "column": "Create_Update_team_Tasks",
+                "type": "boolean",
+                "value": "{{$_POST.Create_Update_team_Tasks}}"
+              },
+              {
+                "table": "Users",
+                "column": "Create_Update_team_Events",
+                "type": "boolean",
+                "value": "{{$_POST.Create_Update_team_Events}}"
+              },
+              {
+                "table": "Users",
+                "column": "Account_settings_and_subscription",
+                "type": "boolean",
+                "value": "{{$_POST.Account_settings_and_subscription}}"
+              },
+              {
+                "table": "Users",
+                "column": "Company_founder",
+                "type": "boolean",
+                "value": "{{$_POST.Company_founder}}"
+              },
+              {
+                "table": "Users",
+                "column": "UpdatedDate",
+                "type": "datetime",
+                "value": "{{NOW}}"
+              },
+              {
+                "table": "Users",
+                "column": "imgUrl",
+                "type": "text",
+                "value": "{{upload.url}}"
+              },
+              {
+                "table": "Users",
+                "column": "imgName",
+                "type": "text",
+                "value": "{{upload.name}}"
+              },
+              {
+                "table": "Users",
+                "column": "imgPath",
+                "type": "text",
+                "value": "{{upload.path}}"
+              }
+            ],
+            "table": "Users",
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.id}}",
+                  "data": {
+                    "column": "id"
+                  },
+                  "operation": "="
+                }
+              ]
+            },
+            "query": "UPDATE Users\nSET FirstName = :P1 /* {{$_POST.FirstName}} */, LastName = :P2 /* {{$_POST.LastName}} */, Email = :P3 /* {{$_POST.Email.lowercase()}} */, Pasword = :P4 /* {{$_POST.Pasword.sha512('slut')}} */, Role = :P5 /* {{$_POST.Role}} */, Create_Update_team_Tasks = :P6 /* {{$_POST.Create_Update_team_Tasks}} */, Create_Update_team_Events = :P7 /* {{$_POST.Create_Update_team_Events}} */, Account_settings_and_subscription = :P8 /* {{$_POST.Account_settings_and_subscription}} */, Company_founder = :P9 /* {{$_POST.Company_founder}} */, UpdatedDate = :P10 /* {{NOW}} */, imgUrl = :P11 /* {{upload.url}} */, imgName = :P12 /* {{upload.name}} */, imgPath = :P13 /* {{upload.path}} */\nWHERE id = :P14 /* {{$_POST.id}} */",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{$_POST.FirstName}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{$_POST.LastName}}"
+              },
+              {
+                "name": ":P3",
+                "type": "expression",
+                "value": "{{$_POST.Email.lowercase()}}"
+              },
+              {
+                "name": ":P4",
+                "type": "expression",
+                "value": "{{$_POST.Pasword.sha512('slut')}}"
+              },
+              {
+                "name": ":P5",
+                "type": "expression",
+                "value": "{{$_POST.Role}}"
+              },
+              {
+                "name": ":P6",
+                "type": "expression",
+                "value": "{{$_POST.Create_Update_team_Tasks}}"
+              },
+              {
+                "name": ":P7",
+                "type": "expression",
+                "value": "{{$_POST.Create_Update_team_Events}}"
+              },
+              {
+                "name": ":P8",
+                "type": "expression",
+                "value": "{{$_POST.Account_settings_and_subscription}}"
+              },
+              {
+                "name": ":P9",
+                "type": "expression",
+                "value": "{{$_POST.Company_founder}}"
+              },
+              {
+                "name": ":P10",
+                "type": "expression",
+                "value": "{{NOW}}"
+              },
+              {
+                "name": ":P11",
+                "type": "expression",
+                "value": "{{upload.url}}"
+              },
+              {
+                "name": ":P12",
+                "type": "expression",
+                "value": "{{upload.name}}"
+              },
+              {
+                "name": ":P13",
+                "type": "expression",
+                "value": "{{upload.path}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P14",
+                "value": "{{$_POST.id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "App_query/All_Users"
+        }
+      }
+    ]
+  }
+}

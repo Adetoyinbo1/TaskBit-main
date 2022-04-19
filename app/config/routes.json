@@ -1,0 +1,33 @@
+{
+  "routes": [
+    {
+      "path": "/signup_page",
+      "page": "signup_page",
+      "layout": "LandingTemplate"
+    },
+    {
+      "path": "/App",
+      "page": "App",
+      "layout": "AppTemplate",
+      "routes": [
+        {
+          "type": "page",
+          "path": "/",
+          "id": "Dashboard",
+          "exact": "true"
+        }
+      ],
+      "routeType": "page"
+    },
+    {
+      "path": "/playground",
+      "page": "playground",
+      "layout": "LandingTemplate"
+    }
+  ],
+  "layouts": {
+    "AppTemplate": {
+      "exec": "/api/Users/restrict"
+    }
+  }
+}

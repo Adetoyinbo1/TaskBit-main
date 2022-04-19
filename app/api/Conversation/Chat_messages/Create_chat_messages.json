@@ -1,0 +1,965 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "ChatText"
+      },
+      {
+        "type": "text",
+        "name": "convo_id"
+      },
+      {
+        "type": "file",
+        "multiple": true,
+        "name": "Files",
+        "sub": [
+          {
+            "type": "text",
+            "name": "name"
+          },
+          {
+            "type": "text",
+            "name": "type"
+          },
+          {
+            "type": "number",
+            "name": "size"
+          },
+          {
+            "type": "text",
+            "name": "error"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "type": "array",
+        "name": "record",
+        "sub": [
+          {
+            "type": "text",
+            "name": "insert_message_copy"
+          },
+          {
+            "type": "text",
+            "name": "url"
+          },
+          {
+            "type": "text",
+            "name": "name"
+          },
+          {
+            "type": "text",
+            "name": "path"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "name": "Notification_text"
+      },
+      {
+        "type": "text",
+        "name": "Notified_user_id"
+      },
+      {
+        "type": "datetime",
+        "name": "Creation_date"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": true,
+        "meta": []
+      },
+      {
+        "name": "query_currentUser",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Users",
+                "column": "FirstName"
+              },
+              {
+                "table": "Users",
+                "column": "LastName"
+              }
+            ],
+            "table": {
+              "name": "Users"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Users.id",
+                  "field": "Users.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{identity}}",
+                  "data": {
+                    "table": "Users",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT FirstName, LastName\nFROM Users\nWHERE id = :P1 /* {{identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{identity}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "FirstName",
+            "type": "text"
+          },
+          {
+            "name": "LastName",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "query_conversation",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Conversation",
+                "column": "id"
+              },
+              {
+                "table": "Conversation",
+                "column": "Type"
+              },
+              {
+                "table": "Conversation",
+                "column": "Companyid"
+              }
+            ],
+            "table": {
+              "name": "Conversation"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Conversation.id",
+                  "field": "Conversation.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.convo_id}}",
+                  "data": {
+                    "table": "Conversation",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT id, Type, Companyid\nFROM Conversation\nWHERE id = :P1 /* {{$_POST.convo_id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.convo_id}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "Type",
+            "type": "text"
+          },
+          {
+            "name": "Companyid",
+            "type": "text"
+          }
+        ],
+        "type": "dbconnector_single",
+        "outputType": "object"
+      },
+      {
+        "name": "query_other_participants",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Participants",
+                "column": "UserId"
+              }
+            ],
+            "table": {
+              "name": "Participants"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Participants.UserId",
+                  "field": "Participants.UserId",
+                  "type": "string",
+                  "operator": "not_equal",
+                  "value": "{{identity}}",
+                  "data": {
+                    "table": "Participants",
+                    "column": "UserId",
+                    "type": "text"
+                  },
+                  "operation": "<>"
+                },
+                {
+                  "id": "Participants.ConversationId",
+                  "field": "Participants.ConversationId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{query_conversation.id}}",
+                  "data": {
+                    "table": "Participants",
+                    "column": "ConversationId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT UserId\nFROM Participants\nWHERE UserId <> :P1 /* {{identity}} */ AND ConversationId = :P2 /* {{query_conversation.id}} */",
+            "params": [
+              {
+                "operator": "not_equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{identity}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{query_conversation.id}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "UserId",
+            "type": "text"
+          }
+        ],
+        "outputType": "array",
+        "type": "dbconnector_select"
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{$_POST.Files == null}}",
+          "then": {
+            "steps": {
+              "name": "insert_message",
+              "module": "dbupdater",
+              "action": "insert",
+              "options": {
+                "connection": "db",
+                "sql": {
+                  "type": "insert",
+                  "values": [
+                    {
+                      "table": "Conversation_chats",
+                      "column": "ConversationId",
+                      "type": "text",
+                      "value": "{{query_conversation.id}}"
+                    },
+                    {
+                      "table": "Conversation_chats",
+                      "column": "ChatText",
+                      "type": "text",
+                      "value": "{{$_POST.ChatText}}"
+                    },
+                    {
+                      "table": "Conversation_chats",
+                      "column": "Creator",
+                      "type": "text",
+                      "value": "{{identity}}"
+                    },
+                    {
+                      "table": "Conversation_chats",
+                      "column": "Chat_Type",
+                      "type": "text",
+                      "value": "Text"
+                    }
+                  ],
+                  "table": "Conversation_chats",
+                  "returning": "id",
+                  "query": "INSERT INTO Conversation_chats\n(ConversationId, ChatText, Creator, Chat_Type) VALUES (:P1 /* {{query_conversation.id}} */, :P2 /* {{$_POST.ChatText}} */, :P3 /* {{identity}} */, 'Text')",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{query_conversation.id}}"
+                    },
+                    {
+                      "name": ":P2",
+                      "type": "expression",
+                      "value": "{{$_POST.ChatText}}"
+                    },
+                    {
+                      "name": ":P3",
+                      "type": "expression",
+                      "value": "{{identity}}"
+                    }
+                  ]
+                }
+              },
+              "meta": [
+                {
+                  "name": "identity",
+                  "type": "text"
+                },
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "else": {
+            "steps": [
+              {
+                "name": "insert_message_copy",
+                "module": "dbupdater",
+                "action": "insert",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "insert",
+                    "values": [
+                      {
+                        "table": "Conversation_chats",
+                        "column": "ConversationId",
+                        "type": "text",
+                        "value": "{{query_conversation.id}}"
+                      },
+                      {
+                        "table": "Conversation_chats",
+                        "column": "ChatText",
+                        "type": "text",
+                        "value": "{{$_POST.ChatText}}"
+                      },
+                      {
+                        "table": "Conversation_chats",
+                        "column": "Creator",
+                        "type": "text",
+                        "value": "{{identity}}"
+                      },
+                      {
+                        "table": "Conversation_chats",
+                        "column": "Chat_Type",
+                        "type": "text",
+                        "value": "File(s)"
+                      }
+                    ],
+                    "table": "Conversation_chats",
+                    "returning": "id",
+                    "query": "INSERT INTO Conversation_chats\n(ConversationId, ChatText, Creator, Chat_Type) VALUES (:P1 /* {{query_conversation.id}} */, :P2 /* {{$_POST.ChatText}} */, :P3 /* {{identity}} */, 'File(s)')",
+                    "params": [
+                      {
+                        "name": ":P1",
+                        "type": "expression",
+                        "value": "{{query_conversation.id}}"
+                      },
+                      {
+                        "name": ":P2",
+                        "type": "expression",
+                        "value": "{{$_POST.ChatText}}"
+                      },
+                      {
+                        "name": ":P3",
+                        "type": "expression",
+                        "value": "{{identity}}"
+                      }
+                    ]
+                  }
+                },
+                "meta": [
+                  {
+                    "name": "identity",
+                    "type": "text"
+                  },
+                  {
+                    "name": "affected",
+                    "type": "number"
+                  }
+                ]
+              },
+              {
+                "name": "upload",
+                "module": "upload",
+                "action": "upload",
+                "options": {
+                  "path": "/public/assets/Img",
+                  "fields": "{{$_POST.Files}}"
+                },
+                "meta": [
+                  {
+                    "name": "name",
+                    "type": "text"
+                  },
+                  {
+                    "name": "path",
+                    "type": "text"
+                  },
+                  {
+                    "name": "url",
+                    "type": "text"
+                  },
+                  {
+                    "name": "type",
+                    "type": "text"
+                  },
+                  {
+                    "name": "size",
+                    "type": "text"
+                  },
+                  {
+                    "name": "error",
+                    "type": "number"
+                  }
+                ],
+                "outputType": "array"
+              },
+              {
+                "name": "repeat_files",
+                "module": "core",
+                "action": "repeat",
+                "options": {
+                  "repeat": "{{upload}}",
+                  "outputFields": [
+                    "name",
+                    "url",
+                    "path"
+                  ],
+                  "exec": {
+                    "steps": {
+                      "name": "insert",
+                      "module": "dbupdater",
+                      "action": "insert",
+                      "options": {
+                        "connection": "db",
+                        "sql": {
+                          "type": "insert",
+                          "values": [
+                            {
+                              "table": "Chats_attachments",
+                              "column": "Chat_msg_id",
+                              "type": "text",
+                              "value": "{{insert_message_copy.identity}}"
+                            },
+                            {
+                              "table": "Chats_attachments",
+                              "column": "FileUrl",
+                              "type": "text",
+                              "value": "{{url}}"
+                            },
+                            {
+                              "table": "Chats_attachments",
+                              "column": "FileName",
+                              "type": "text",
+                              "value": "{{name}}"
+                            },
+                            {
+                              "table": "Chats_attachments",
+                              "column": "FilePath",
+                              "type": "text",
+                              "value": "{{path}}"
+                            }
+                          ],
+                          "table": "Chats_attachments",
+                          "returning": "id",
+                          "query": "INSERT INTO Chats_attachments\n(Chat_msg_id, FileUrl, FileName, FilePath) VALUES (:P1 /* {{insert_message_copy.identity}} */, :P2 /* {{url}} */, :P3 /* {{name}} */, :P4 /* {{path}} */)",
+                          "params": [
+                            {
+                              "name": ":P1",
+                              "type": "expression",
+                              "value": "{{insert_message_copy.identity}}"
+                            },
+                            {
+                              "name": ":P2",
+                              "type": "expression",
+                              "value": "{{url}}"
+                            },
+                            {
+                              "name": ":P3",
+                              "type": "expression",
+                              "value": "{{name}}"
+                            },
+                            {
+                              "name": ":P4",
+                              "type": "expression",
+                              "value": "{{path}}"
+                            }
+                          ]
+                        }
+                      },
+                      "meta": [
+                        {
+                          "name": "identity",
+                          "type": "text"
+                        },
+                        {
+                          "name": "affected",
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "$index",
+                    "type": "number"
+                  },
+                  {
+                    "name": "$number",
+                    "type": "number"
+                  },
+                  {
+                    "name": "$name",
+                    "type": "text"
+                  },
+                  {
+                    "name": "$value",
+                    "type": "object"
+                  },
+                  {
+                    "name": "name",
+                    "type": "text"
+                  },
+                  {
+                    "name": "path",
+                    "type": "text"
+                  },
+                  {
+                    "name": "url",
+                    "type": "text"
+                  },
+                  {
+                    "name": "type",
+                    "type": "text"
+                  },
+                  {
+                    "name": "size",
+                    "type": "text"
+                  },
+                  {
+                    "name": "error",
+                    "type": "number"
+                  }
+                ],
+                "outputType": "array"
+              }
+            ]
+          }
+        },
+        "outputType": "boolean"
+      },
+      {
+        "name": "repeat_other_participants",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{query_other_participants}}",
+          "outputFields": [
+            "UserId"
+          ],
+          "exec": {
+            "steps": [
+              {
+                "name": "query_d_user",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Users",
+                        "column": "id"
+                      }
+                    ],
+                    "table": {
+                      "name": "Users"
+                    },
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Users.id",
+                          "field": "Users.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{UserId}}",
+                          "data": {
+                            "table": "Users",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT id\nFROM Users\nWHERE id = :P1 /* {{UserId}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{UserId}}"
+                      }
+                    ]
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "",
+                "module": "core",
+                "action": "condition",
+                "options": {
+                  "if": "{{query_conversation.Type != 'Direct'}}",
+                  "then": {
+                    "steps": [
+                      {
+                        "name": "cond_A_notif_text",
+                        "module": "core",
+                        "action": "setvalue",
+                        "options": {
+                          "key": "cond_A_notif_text",
+                          "value": "New chat from {{query_currentUser.FirstName}} {{query_currentUser.LastName}} <u>in</u> <p class=\"text-muted\">{{query_conversation.Type}} chats</p>"
+                        },
+                        "output": true
+                      },
+                      {
+                        "name": "insert_notification",
+                        "module": "dbupdater",
+                        "action": "insert",
+                        "options": {
+                          "connection": "db",
+                          "sql": {
+                            "type": "insert",
+                            "values": [
+                              {
+                                "table": "Notification",
+                                "column": "Conversationi_id",
+                                "type": "text",
+                                "value": "{{query_conversation.id}}"
+                              },
+                              {
+                                "table": "Notification",
+                                "column": "Creator_id",
+                                "type": "text",
+                                "value": "{{identity}}"
+                              },
+                              {
+                                "table": "Notification",
+                                "column": "Creation_date",
+                                "type": "datetime",
+                                "value": "{{NOW}}"
+                              },
+                              {
+                                "table": "Notification",
+                                "column": "Notified_user_id",
+                                "type": "text",
+                                "value": "{{query_d_user.id}}"
+                              },
+                              {
+                                "table": "Notification",
+                                "column": "Notification_text",
+                                "type": "text",
+                                "value": "{{cond_A_notif_text}}"
+                              },
+                              {
+                                "table": "Notification",
+                                "column": "Company_id",
+                                "type": "text",
+                                "value": "{{query_conversation.Companyid}}"
+                              }
+                            ],
+                            "table": "Notification",
+                            "returning": "id",
+                            "query": "INSERT INTO Notification\n(Conversationi_id, Creator_id, Creation_date, Notified_user_id, Notification_text, Company_id) VALUES (:P1 /* {{query_conversation.id}} */, :P2 /* {{identity}} */, :P3 /* {{NOW}} */, :P4 /* {{query_d_user.id}} */, :P5 /* {{cond_A_notif_text}} */, :P6 /* {{query_conversation.Companyid}} */)",
+                            "params": [
+                              {
+                                "name": ":P1",
+                                "type": "expression",
+                                "value": "{{query_conversation.id}}"
+                              },
+                              {
+                                "name": ":P2",
+                                "type": "expression",
+                                "value": "{{identity}}"
+                              },
+                              {
+                                "name": ":P3",
+                                "type": "expression",
+                                "value": "{{NOW}}"
+                              },
+                              {
+                                "name": ":P4",
+                                "type": "expression",
+                                "value": "{{query_d_user.id}}"
+                              },
+                              {
+                                "name": ":P5",
+                                "type": "expression",
+                                "value": "{{cond_A_notif_text}}"
+                              },
+                              {
+                                "name": ":P6",
+                                "type": "expression",
+                                "value": "{{query_conversation.Companyid}}"
+                              }
+                            ]
+                          }
+                        },
+                        "meta": [
+                          {
+                            "name": "identity",
+                            "type": "text"
+                          },
+                          {
+                            "name": "affected",
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "else": {
+                    "steps": {
+                      "name": "insert_notification_copy",
+                      "module": "dbupdater",
+                      "action": "insert",
+                      "options": {
+                        "connection": "db",
+                        "sql": {
+                          "type": "insert",
+                          "values": [
+                            {
+                              "table": "Notification",
+                              "column": "Conversationi_id",
+                              "type": "text",
+                              "value": "{{query_conversation.id}}"
+                            },
+                            {
+                              "table": "Notification",
+                              "column": "Creator_id",
+                              "type": "text",
+                              "value": "{{identity}}"
+                            },
+                            {
+                              "table": "Notification",
+                              "column": "Creation_date",
+                              "type": "datetime",
+                              "value": "{{NOW}}"
+                            },
+                            {
+                              "table": "Notification",
+                              "column": "Notified_user_id",
+                              "type": "text",
+                              "value": "{{query_d_user.id}}"
+                            },
+                            {
+                              "table": "Notification",
+                              "column": "Notification_text",
+                              "type": "text",
+                              "value": "{{'New chat from '+query_currentUser.FirstName+' '+query_currentUser.LastName}}"
+                            },
+                            {
+                              "table": "Notification",
+                              "column": "Company_id",
+                              "type": "text",
+                              "value": "{{query_conversation.Companyid}}"
+                            }
+                          ],
+                          "table": "Notification",
+                          "returning": "id",
+                          "query": "INSERT INTO Notification\n(Conversationi_id, Creator_id, Creation_date, Notified_user_id, Notification_text, Company_id) VALUES (:P1 /* {{query_conversation.id}} */, :P2 /* {{identity}} */, :P3 /* {{NOW}} */, :P4 /* {{query_d_user.id}} */, :P5 /* {{'New chat from '+query_currentUser.FirstName+' '+query_currentUser.LastName}} */, :P6 /* {{query_conversation.Companyid}} */)",
+                          "params": [
+                            {
+                              "name": ":P1",
+                              "type": "expression",
+                              "value": "{{query_conversation.id}}"
+                            },
+                            {
+                              "name": ":P2",
+                              "type": "expression",
+                              "value": "{{identity}}"
+                            },
+                            {
+                              "name": ":P3",
+                              "type": "expression",
+                              "value": "{{NOW}}"
+                            },
+                            {
+                              "name": ":P4",
+                              "type": "expression",
+                              "value": "{{query_d_user.id}}"
+                            },
+                            {
+                              "name": ":P5",
+                              "type": "expression",
+                              "value": "{{'New chat from '+query_currentUser.FirstName+' '+query_currentUser.LastName}}"
+                            },
+                            {
+                              "name": ":P6",
+                              "type": "expression",
+                              "value": "{{query_conversation.Companyid}}"
+                            }
+                          ]
+                        }
+                      },
+                      "meta": [
+                        {
+                          "name": "identity",
+                          "type": "text"
+                        },
+                        {
+                          "name": "affected",
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "outputType": "boolean"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "UserId",
+            "type": "text"
+          },
+          {
+            "name": "query_d_user",
+            "type": "object",
+            "sub": [
+              {
+                "name": "id",
+                "type": "text"
+              }
+            ]
+          },
+          {
+            "name": "cond_A_notif_text",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Conversation/Chat_messages/Query_messages"
+        }
+      }
+    ]
+  }
+}

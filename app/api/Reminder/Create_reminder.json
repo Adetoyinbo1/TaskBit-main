@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/App.ejs",
+      "linkedForm": "reminder_form"
+    },
+    "$_POST": [
+      {
+        "type": "text",
+        "fieldName": "ReminderTitle",
+        "name": "ReminderTitle"
+      },
+      {
+        "type": "text",
+        "fieldName": "ReminderDate",
+        "options": {
+          "rules": {}
+        },
+        "name": "ReminderDate"
+      },
+      {
+        "type": "text",
+        "fieldName": "ReminderType",
+        "name": "ReminderType"
+      },
+      {
+        "type": "text",
+        "fieldName": "ReminderDescription",
+        "name": "ReminderDescription"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "insert",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Reminder",
+                "column": "ReminderText",
+                "type": "text",
+                "value": "{{$_POST.ReminderDescription}}"
+              },
+              {
+                "table": "Reminder",
+                "column": "Created_Date",
+                "type": "datetime",
+                "value": "{{NOW}}"
+              },
+              {
+                "table": "Reminder",
+                "column": "RemiderTitle",
+                "type": "text",
+                "value": "{{$_POST.ReminderTitle}}"
+              },
+              {
+                "table": "Reminder",
+                "column": "Creator",
+                "type": "text",
+                "value": "{{security.identity}}"
+              },
+              {
+                "table": "Reminder",
+                "column": "Date",
+                "type": "datetime",
+                "value": "{{$_POST.ReminderDate.toLocalTime()}}"
+              },
+              {
+                "table": "Reminder",
+                "column": "ReminderType",
+                "type": "text",
+                "value": "{{$_POST.ReminderType}}"
+              }
+            ],
+            "table": "Reminder",
+            "returning": "id",
+            "query": "INSERT INTO Reminder\n(ReminderText, Created_Date, RemiderTitle, Creator, Date, ReminderType) VALUES (:P1 /* {{$_POST.ReminderDescription}} */, :P2 /* {{NOW}} */, :P3 /* {{$_POST.ReminderTitle}} */, :P4 /* {{security.identity}} */, :P5 /* {{$_POST.ReminderDate.toLocalTime()}} */, :P6 /* {{$_POST.ReminderType}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{$_POST.ReminderDescription}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{NOW}}"
+              },
+              {
+                "name": ":P3",
+                "type": "expression",
+                "value": "{{$_POST.ReminderTitle}}"
+              },
+              {
+                "name": ":P4",
+                "type": "expression",
+                "value": "{{security.identity}}"
+              },
+              {
+                "name": ":P5",
+                "type": "expression",
+                "value": "{{$_POST.ReminderDate.toLocalTime()}}"
+              },
+              {
+                "name": ":P6",
+                "type": "expression",
+                "value": "{{$_POST.ReminderType}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Reminder/QueryReminder"
+        }
+      }
+    ]
+  }
+}

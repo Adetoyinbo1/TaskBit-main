@@ -1,0 +1,28 @@
+{
+  "bootstrap5": {
+    "basic": {
+      "primary": "#F8D57E",
+      "secondary": "#F9F1B0",
+      "danger": "#FF0000",
+      "success": "#F6F7FB",
+      "info": "#F8F9FC",
+      "warning": "#FDBFBF",
+      "light": "#fff",
+      "body-color": "#000",
+      "headings-font-family": "Poppins:500",
+      "font-family-base": "Poppins:500",
+      "border-radius": "1.35rem",
+      "enable-shadows": true,
+      "font-family-sans-serif": "Poppins:500",
+      "font-family-monospace": "Poppins:500",
+      "link-color": "#2c2d2e",
+      "dark": "#000",
+      "font-size-base": "0.95"
+    },
+    "advanced": {
+      "paragraph-margin-bottom": "0px",
+      "input-border-color": "#000",
+      "input-border-radius": "0px"
+    }
+  }
+}

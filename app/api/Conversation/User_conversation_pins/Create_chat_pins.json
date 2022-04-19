@@ -1,0 +1,220 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "msg_id"
+      },
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "msg_id"
+      },
+      {
+        "type": "text",
+        "name": "convo_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_conversation",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Conversation",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Conversation"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Conversation.id",
+                  "field": "Conversation.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.convo_id}}",
+                  "data": {
+                    "table": "Conversation",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT id\nFROM Conversation\nWHERE id = :P1 /* {{$_POST.convo_id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.convo_id}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "query_message",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Conversation_chats",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Conversation_chats"
+            },
+            "joins": [],
+            "query": "SELECT id\nFROM Conversation_chats\nWHERE id = :P1 /* {{$_POST.msg_id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.msg_id}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Conversation_chats.id",
+                  "field": "Conversation_chats.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.msg_id}}",
+                  "data": {
+                    "table": "Conversation_chats",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "insert",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Conversation_Pin",
+                "column": "ConversationId",
+                "type": "text",
+                "value": "{{query_conversation.id}}"
+              },
+              {
+                "table": "Conversation_Pin",
+                "column": "Pinner_id",
+                "type": "text",
+                "value": "{{security.identity}}"
+              },
+              {
+                "table": "Conversation_Pin",
+                "column": "Msg_id",
+                "type": "text",
+                "value": "{{query_message.id}}"
+              }
+            ],
+            "table": "Conversation_Pin",
+            "returning": "id",
+            "query": "INSERT INTO Conversation_Pin\n(ConversationId, Pinner_id, Msg_id) VALUES (:P1 /* {{query_conversation.id}} */, :P2 /* {{security.identity}} */, :P3 /* {{query_message.id}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{query_conversation.id}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{security.identity}}"
+              },
+              {
+                "name": ":P3",
+                "type": "expression",
+                "value": "{{query_message.id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Conversation/User_conversation_pins/Query_chat_pins"
+        }
+      }
+    ]
+  }
+}

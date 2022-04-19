@@ -1,0 +1,167 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "userid"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "User",
+      "module": "dbconnector",
+      "action": "single",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "Users",
+              "column": "FirstName"
+            },
+            {
+              "table": "Users",
+              "column": "LastName"
+            },
+            {
+              "table": "Users",
+              "column": "Email"
+            },
+            {
+              "table": "Users",
+              "column": "Role"
+            },
+            {
+              "table": "Users",
+              "column": "Create_Update_team_Tasks"
+            },
+            {
+              "table": "Users",
+              "column": "Create_Update_team_Events"
+            },
+            {
+              "table": "Users",
+              "column": "Account_settings_and_subscription"
+            },
+            {
+              "table": "Users",
+              "column": "Company_founder"
+            },
+            {
+              "table": "Users",
+              "column": "imgUrl"
+            },
+            {
+              "table": "Users",
+              "column": "imgName"
+            },
+            {
+              "table": "Users",
+              "column": "imgPath"
+            },
+            {
+              "table": "Users",
+              "column": "id"
+            }
+          ],
+          "table": {
+            "name": "Users"
+          },
+          "joins": [],
+          "wheres": {
+            "condition": "AND",
+            "rules": [
+              {
+                "id": "Users.id",
+                "field": "Users.id",
+                "type": "double",
+                "operator": "equal",
+                "value": "{{$_GET.userid}}",
+                "data": {
+                  "table": "Users",
+                  "column": "id",
+                  "type": "number"
+                },
+                "operation": "="
+              }
+            ],
+            "conditional": null,
+            "valid": true
+          },
+          "query": "SELECT FirstName, LastName, Email, Role, Create_Update_team_Tasks, Create_Update_team_Events, Account_settings_and_subscription, Company_founder, imgUrl, imgName, imgPath, id\nFROM Users\nWHERE id = :P1 /* {{$_GET.userid}} */",
+          "params": [
+            {
+              "operator": "equal",
+              "type": "expression",
+              "name": ":P1",
+              "value": "{{$_GET.userid}}"
+            }
+          ]
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "name": "FirstName",
+          "type": "text"
+        },
+        {
+          "name": "LastName",
+          "type": "text"
+        },
+        {
+          "name": "Email",
+          "type": "text"
+        },
+        {
+          "name": "Role",
+          "type": "text"
+        },
+        {
+          "name": "Create_Update_team_Tasks",
+          "type": "boolean"
+        },
+        {
+          "name": "Create_Update_team_Events",
+          "type": "boolean"
+        },
+        {
+          "name": "Account_settings_and_subscription",
+          "type": "boolean"
+        },
+        {
+          "name": "Company_founder",
+          "type": "boolean"
+        },
+        {
+          "name": "imgUrl",
+          "type": "text"
+        },
+        {
+          "name": "imgName",
+          "type": "text"
+        },
+        {
+          "name": "imgPath",
+          "type": "text"
+        },
+        {
+          "name": "id",
+          "type": "text"
+        }
+      ],
+      "outputType": "object",
+      "type": "dbconnector_single"
+    }
+  }
+}

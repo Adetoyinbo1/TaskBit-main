@@ -1,0 +1,999 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "company_id"
+      },
+      {
+        "type": "text",
+        "name": "subscription_plan"
+      },
+      {
+        "type": "text",
+        "name": "subscription_price"
+      },
+      {
+        "type": "array",
+        "name": "lineItems",
+        "sub": [
+          {
+            "type": "text",
+            "name": "price"
+          },
+          {
+            "type": "text",
+            "name": "quantity"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "name": "Subscription_id"
+      },
+      {
+        "type": "text",
+        "name": "Account_customer_id"
+      },
+      {
+        "type": "datetime",
+        "name": "Current_period_end"
+      },
+      {
+        "type": "text",
+        "name": "Subscription_status"
+      },
+      {
+        "type": "text",
+        "name": "Company_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "query_company",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Company_Account",
+                "column": "Stripe_customer_id"
+              },
+              {
+                "table": "Company_Account",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Company_Account"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Company_Account.id",
+                  "field": "Company_Account.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": 3,
+                  "data": {
+                    "table": "Company_Account",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT Stripe_customer_id, id\nFROM Company_Account\nWHERE id = 3",
+            "params": []
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "Stripe_customer_id",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "retrieveCustomer",
+        "module": "stripe",
+        "action": "retrieveCustomer",
+        "options": {
+          "customer": "{{query_company.Stripe_customer_id}}"
+        },
+        "outputType": "text",
+        "meta": [
+          {
+            "name": "address",
+            "type": "object",
+            "ref": "stripe_address"
+          },
+          {
+            "name": "balance",
+            "type": "number"
+          },
+          {
+            "name": "created",
+            "type": "number"
+          },
+          {
+            "name": "currency",
+            "type": "text"
+          },
+          {
+            "name": "default_source",
+            "type": "text",
+            "expand": [
+              "stripe_payment_source"
+            ]
+          },
+          {
+            "name": "delinquent",
+            "type": "boolean"
+          },
+          {
+            "name": "description",
+            "type": "text"
+          },
+          {
+            "name": "discount",
+            "type": "object",
+            "ref": "stripe_discount"
+          },
+          {
+            "name": "email",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "invoice_prefix",
+            "type": "text"
+          },
+          {
+            "name": "invoice_settings",
+            "type": "object",
+            "ref": "stripe_invoice_setting_customer_setting"
+          },
+          {
+            "name": "livemode",
+            "type": "boolean"
+          },
+          {
+            "name": "metadata",
+            "type": "object"
+          },
+          {
+            "name": "name",
+            "type": "text"
+          },
+          {
+            "name": "next_invoice_sequence",
+            "type": "number"
+          },
+          {
+            "name": "object",
+            "type": "text"
+          },
+          {
+            "name": "phone",
+            "type": "text"
+          },
+          {
+            "name": "preferred_locales",
+            "type": "array",
+            "sub": []
+          },
+          {
+            "name": "shipping",
+            "type": "object",
+            "ref": "stripe_shipping"
+          },
+          {
+            "name": "sources",
+            "type": "object",
+            "sub": [
+              {
+                "name": "data",
+                "type": "array",
+                "sub": [
+                  {
+                    "name": "payment_source",
+                    "type": "object"
+                  }
+                ]
+              },
+              {
+                "name": "has_more",
+                "type": "boolean"
+              },
+              {
+                "name": "object",
+                "type": "text"
+              },
+              {
+                "name": "url",
+                "type": "text"
+              }
+            ]
+          },
+          {
+            "name": "subscriptions",
+            "type": "object",
+            "sub": [
+              {
+                "name": "data",
+                "type": "array",
+                "sub": [
+                  {
+                    "name": "billing_cycle_anchor",
+                    "type": "number"
+                  },
+                  {
+                    "name": "billing_thresholds",
+                    "type": "object",
+                    "ref": "stripe_subscription_billing_thresholds"
+                  },
+                  {
+                    "name": "cancel_at",
+                    "type": "number"
+                  },
+                  {
+                    "name": "cancel_at_period_end",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "canceled_at",
+                    "type": "number"
+                  },
+                  {
+                    "name": "collection_method",
+                    "type": "text"
+                  },
+                  {
+                    "name": "created",
+                    "type": "number"
+                  },
+                  {
+                    "name": "current_period_end",
+                    "type": "number"
+                  },
+                  {
+                    "name": "current_period_start",
+                    "type": "number"
+                  },
+                  {
+                    "name": "customer",
+                    "type": "text",
+                    "expand": [
+                      "stripe_customer",
+                      "stripe_deleted_customer"
+                    ]
+                  },
+                  {
+                    "name": "days_until_due",
+                    "type": "number"
+                  },
+                  {
+                    "name": "default_payment_method",
+                    "type": "text",
+                    "expand": [
+                      "stripe_payment_method"
+                    ]
+                  },
+                  {
+                    "name": "default_source",
+                    "type": "text",
+                    "expand": [
+                      "stripe_payment_source"
+                    ]
+                  },
+                  {
+                    "name": "default_tax_rates",
+                    "type": "array",
+                    "sub": [
+                      {
+                        "name": "active",
+                        "type": "boolean"
+                      },
+                      {
+                        "name": "country",
+                        "type": "text"
+                      },
+                      {
+                        "name": "created",
+                        "type": "number"
+                      },
+                      {
+                        "name": "description",
+                        "type": "text"
+                      },
+                      {
+                        "name": "display_name",
+                        "type": "text"
+                      },
+                      {
+                        "name": "id",
+                        "type": "text"
+                      },
+                      {
+                        "name": "inclusive",
+                        "type": "boolean"
+                      },
+                      {
+                        "name": "jurisdiction",
+                        "type": "text"
+                      },
+                      {
+                        "name": "livemode",
+                        "type": "boolean"
+                      },
+                      {
+                        "name": "metadata",
+                        "type": "object"
+                      },
+                      {
+                        "name": "object",
+                        "type": "text"
+                      },
+                      {
+                        "name": "state",
+                        "type": "text"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "discount",
+                    "type": "object",
+                    "ref": "stripe_discount"
+                  },
+                  {
+                    "name": "ended_at",
+                    "type": "number"
+                  },
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "items",
+                    "type": "object",
+                    "sub": [
+                      {
+                        "name": "data",
+                        "type": "array",
+                        "sub": [
+                          {
+                            "name": "billing_thresholds",
+                            "type": "object",
+                            "ref": "stripe_subscription_item_billing_thresholds"
+                          },
+                          {
+                            "name": "created",
+                            "type": "number"
+                          },
+                          {
+                            "name": "id",
+                            "type": "text"
+                          },
+                          {
+                            "name": "metadata",
+                            "type": "object"
+                          },
+                          {
+                            "name": "object",
+                            "type": "text"
+                          },
+                          {
+                            "name": "plan",
+                            "type": "object",
+                            "ref": "stripe_plan"
+                          },
+                          {
+                            "name": "price",
+                            "type": "object",
+                            "ref": "stripe_price"
+                          },
+                          {
+                            "name": "quantity",
+                            "type": "number"
+                          },
+                          {
+                            "name": "subscription",
+                            "type": "text"
+                          },
+                          {
+                            "name": "tax_rates",
+                            "type": "array",
+                            "sub": [
+                              {
+                                "name": "active",
+                                "type": "boolean"
+                              },
+                              {
+                                "name": "country",
+                                "type": "text"
+                              },
+                              {
+                                "name": "created",
+                                "type": "number"
+                              },
+                              {
+                                "name": "description",
+                                "type": "text"
+                              },
+                              {
+                                "name": "display_name",
+                                "type": "text"
+                              },
+                              {
+                                "name": "id",
+                                "type": "text"
+                              },
+                              {
+                                "name": "inclusive",
+                                "type": "boolean"
+                              },
+                              {
+                                "name": "jurisdiction",
+                                "type": "text"
+                              },
+                              {
+                                "name": "livemode",
+                                "type": "boolean"
+                              },
+                              {
+                                "name": "metadata",
+                                "type": "object"
+                              },
+                              {
+                                "name": "object",
+                                "type": "text"
+                              },
+                              {
+                                "name": "state",
+                                "type": "text"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "has_more",
+                        "type": "boolean"
+                      },
+                      {
+                        "name": "object",
+                        "type": "text"
+                      },
+                      {
+                        "name": "url",
+                        "type": "text"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "latest_invoice",
+                    "type": "text",
+                    "expand": [
+                      "stripe_invoice"
+                    ]
+                  },
+                  {
+                    "name": "livemode",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "metadata",
+                    "type": "object"
+                  },
+                  {
+                    "name": "next_pending_invoice_item_invoice",
+                    "type": "number"
+                  },
+                  {
+                    "name": "object",
+                    "type": "text"
+                  },
+                  {
+                    "name": "pause_collection",
+                    "type": "object",
+                    "ref": "stripe_subscriptions_resource_pause_collection"
+                  },
+                  {
+                    "name": "pending_invoice_item_interval",
+                    "type": "object",
+                    "ref": "stripe_subscription_pending_invoice_item_interval"
+                  },
+                  {
+                    "name": "pending_setup_intent",
+                    "type": "text",
+                    "expand": [
+                      "stripe_setup_intent"
+                    ]
+                  },
+                  {
+                    "name": "pending_update",
+                    "type": "object",
+                    "ref": "stripe_subscriptions_resource_pending_update"
+                  },
+                  {
+                    "name": "schedule",
+                    "type": "text",
+                    "expand": [
+                      "stripe_subscription_schedule"
+                    ]
+                  },
+                  {
+                    "name": "start_date",
+                    "type": "number"
+                  },
+                  {
+                    "name": "status",
+                    "type": "text"
+                  },
+                  {
+                    "name": "transfer_data",
+                    "type": "object",
+                    "ref": "stripe_subscription_transfer_data"
+                  },
+                  {
+                    "name": "trial_end",
+                    "type": "number"
+                  },
+                  {
+                    "name": "trial_start",
+                    "type": "number"
+                  }
+                ]
+              },
+              {
+                "name": "has_more",
+                "type": "boolean"
+              },
+              {
+                "name": "object",
+                "type": "text"
+              },
+              {
+                "name": "url",
+                "type": "text"
+              }
+            ]
+          },
+          {
+            "name": "tax_exempt",
+            "type": "text"
+          },
+          {
+            "name": "tax_ids",
+            "type": "object",
+            "sub": [
+              {
+                "name": "data",
+                "type": "array",
+                "sub": [
+                  {
+                    "name": "country",
+                    "type": "text"
+                  },
+                  {
+                    "name": "created",
+                    "type": "number"
+                  },
+                  {
+                    "name": "customer",
+                    "type": "text",
+                    "expand": [
+                      "stripe_customer"
+                    ]
+                  },
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "livemode",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "object",
+                    "type": "text"
+                  },
+                  {
+                    "name": "type",
+                    "type": "text"
+                  },
+                  {
+                    "name": "value",
+                    "type": "text"
+                  },
+                  {
+                    "name": "verification",
+                    "type": "object",
+                    "ref": "stripe_tax_id_verification"
+                  }
+                ]
+              },
+              {
+                "name": "has_more",
+                "type": "boolean"
+              },
+              {
+                "name": "object",
+                "type": "text"
+              },
+              {
+                "name": "url",
+                "type": "text"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "createCheckoutSession",
+        "module": "stripe",
+        "action": "createCheckoutSession",
+        "options": {
+          "payment_method_types": [
+            "card"
+          ],
+          "line_items": [
+            {
+              "price": "price_1JSzXKERsMaXFKndapgmSvUA",
+              "quantity": "1"
+            }
+          ],
+          "mode": "subscription",
+          "lineItemsType": "list",
+          "cancel_url": "http://localhost:8100/App",
+          "success_url": "http://localhost:8100/App",
+          "subscription_data": {
+            "trial_period_days": 30
+          },
+          "customer": "{{retrieveCustomer.id}}"
+        },
+        "outputType": "object",
+        "meta": [
+          {
+            "name": "allow_promotion_codes",
+            "type": "boolean"
+          },
+          {
+            "name": "amount_subtotal",
+            "type": "number"
+          },
+          {
+            "name": "amount_total",
+            "type": "number"
+          },
+          {
+            "name": "billing_address_collection",
+            "type": "text"
+          },
+          {
+            "name": "cancel_url",
+            "type": "text"
+          },
+          {
+            "name": "client_reference_id",
+            "type": "text"
+          },
+          {
+            "name": "currency",
+            "type": "text"
+          },
+          {
+            "name": "customer",
+            "type": "text",
+            "expand": [
+              "stripe_customer",
+              "stripe_deleted_customer"
+            ]
+          },
+          {
+            "name": "customer_details",
+            "type": "object",
+            "ref": "stripe_payment_pages_checkout_session_customer_details"
+          },
+          {
+            "name": "customer_email",
+            "type": "text"
+          },
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "line_items",
+            "type": "object",
+            "sub": [
+              {
+                "name": "data",
+                "type": "array",
+                "sub": [
+                  {
+                    "name": "amount_subtotal",
+                    "type": "number"
+                  },
+                  {
+                    "name": "amount_total",
+                    "type": "number"
+                  },
+                  {
+                    "name": "currency",
+                    "type": "text"
+                  },
+                  {
+                    "name": "description",
+                    "type": "text"
+                  },
+                  {
+                    "name": "discounts",
+                    "type": "array",
+                    "sub": [
+                      {
+                        "name": "amount",
+                        "type": "number"
+                      },
+                      {
+                        "name": "discount",
+                        "type": "object",
+                        "ref": "stripe_discount"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "object",
+                    "type": "text"
+                  },
+                  {
+                    "name": "price",
+                    "type": "object",
+                    "ref": "stripe_price"
+                  },
+                  {
+                    "name": "quantity",
+                    "type": "number"
+                  },
+                  {
+                    "name": "taxes",
+                    "type": "array",
+                    "sub": [
+                      {
+                        "name": "amount",
+                        "type": "number"
+                      },
+                      {
+                        "name": "rate",
+                        "type": "object",
+                        "ref": "stripe_tax_rate"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "has_more",
+                "type": "boolean"
+              },
+              {
+                "name": "object",
+                "type": "text"
+              },
+              {
+                "name": "url",
+                "type": "text"
+              }
+            ]
+          },
+          {
+            "name": "livemode",
+            "type": "boolean"
+          },
+          {
+            "name": "locale",
+            "type": "text"
+          },
+          {
+            "name": "metadata",
+            "type": "object"
+          },
+          {
+            "name": "mode",
+            "type": "text"
+          },
+          {
+            "name": "object",
+            "type": "text"
+          },
+          {
+            "name": "payment_intent",
+            "type": "text",
+            "expand": [
+              "stripe_payment_intent"
+            ]
+          },
+          {
+            "name": "payment_method_options",
+            "type": "object",
+            "ref": "stripe_checkout_session_payment_method_options"
+          },
+          {
+            "name": "payment_method_types",
+            "type": "array",
+            "sub": []
+          },
+          {
+            "name": "payment_status",
+            "type": "text"
+          },
+          {
+            "name": "setup_intent",
+            "type": "text",
+            "expand": [
+              "stripe_setup_intent"
+            ]
+          },
+          {
+            "name": "shipping",
+            "type": "object",
+            "ref": "stripe_shipping"
+          },
+          {
+            "name": "shipping_address_collection",
+            "type": "object",
+            "ref": "stripe_payment_pages_payment_page_resources_shipping_address_collection"
+          },
+          {
+            "name": "submit_type",
+            "type": "text"
+          },
+          {
+            "name": "subscription",
+            "type": "text",
+            "expand": [
+              "stripe_subscription"
+            ]
+          },
+          {
+            "name": "success_url",
+            "type": "text"
+          },
+          {
+            "name": "total_details",
+            "type": "object",
+            "ref": "stripe_payment_pages_checkout_session_total_details"
+          }
+        ]
+      },
+      {
+        "name": "insert",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Subscriptions",
+                "column": "Subscription_id",
+                "type": "text",
+                "value": "{{$_POST.Subscription_id}}"
+              },
+              {
+                "table": "Subscriptions",
+                "column": "Account_customer_id",
+                "type": "text",
+                "value": "{{$_POST.Account_customer_id}}"
+              },
+              {
+                "table": "Subscriptions",
+                "column": "Current_period_end",
+                "type": "datetime",
+                "value": "{{$_POST.Current_period_end}}"
+              },
+              {
+                "table": "Subscriptions",
+                "column": "Subscription_status",
+                "type": "text",
+                "value": "{{$_POST.Subscription_status}}"
+              },
+              {
+                "table": "Subscriptions",
+                "column": "Company_id",
+                "type": "text",
+                "value": "{{$_POST.Company_id}}"
+              }
+            ],
+            "table": "Subscriptions",
+            "returning": "id",
+            "query": "INSERT INTO Subscriptions\n(Subscription_id, Account_customer_id, Current_period_end, Subscription_status, Company_id) VALUES (:P1 /* {{$_POST.Subscription_id}} */, :P2 /* {{$_POST.Account_customer_id}} */, :P3 /* {{$_POST.Current_period_end}} */, :P4 /* {{$_POST.Subscription_status}} */, :P5 /* {{$_POST.Company_id}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{$_POST.Subscription_id}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{$_POST.Account_customer_id}}"
+              },
+              {
+                "name": ":P3",
+                "type": "expression",
+                "value": "{{$_POST.Current_period_end}}"
+              },
+              {
+                "name": ":P4",
+                "type": "expression",
+                "value": "{{$_POST.Subscription_status}}"
+              },
+              {
+                "name": ":P5",
+                "type": "expression",
+                "value": "{{$_POST.Company_id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "id",
+        "module": "core",
+        "action": "setvalue",
+        "options": {
+          "key": "id",
+          "value": "{{createCheckoutSession.id}}"
+        },
+        "output": true
+      }
+    ]
+  }
+}

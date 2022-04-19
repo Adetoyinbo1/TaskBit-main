@@ -1,0 +1,153 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "msg_id"
+      },
+      {
+        "type": "text",
+        "name": "convo_id"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "query",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Conversation_chats",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Conversation_chats"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Conversation_chats.id",
+                  "field": "Conversation_chats.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.msg_id}}",
+                  "data": {
+                    "table": "Conversation_chats",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT id\nFROM Conversation_chats\nWHERE id = :P1 /* {{$_POST.msg_id}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.msg_id}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "update",
+        "module": "dbupdater",
+        "action": "update",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "update",
+            "values": [
+              {
+                "table": "Conversation",
+                "column": "Conversation_pinned_message_id",
+                "type": "text",
+                "value": "{{query.id}}"
+              }
+            ],
+            "table": "Conversation",
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "id",
+                  "field": "id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.convo_id}}",
+                  "data": {
+                    "column": "id"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "UPDATE Conversation\nSET Conversation_pinned_message_id = :P1 /* {{query.id}} */\nWHERE id = :P2 /* {{$_POST.convo_id}} */",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{query.id}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{$_POST.convo_id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Conversation/Conversations_query/Query_conservation"
+        }
+      }
+    ]
+  }
+}

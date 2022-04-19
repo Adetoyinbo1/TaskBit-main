@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "query",
+      "module": "dbconnector",
+      "action": "select",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "Tasks",
+              "column": "TaskTitle"
+            },
+            {
+              "table": "Tasks",
+              "column": "Task_description"
+            }
+          ],
+          "table": {
+            "name": "Tasks"
+          },
+          "joins": [],
+          "query": "SELECT TaskTitle, Task_description\nFROM Tasks",
+          "params": []
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "name": "TaskTitle",
+          "type": "text"
+        },
+        {
+          "name": "Task_description",
+          "type": "text"
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

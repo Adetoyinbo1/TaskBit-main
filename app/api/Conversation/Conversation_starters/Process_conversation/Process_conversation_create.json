@@ -1,0 +1,499 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "name": "ProcessId"
+      },
+      {
+        "type": "text",
+        "name": "companyid"
+      },
+      {
+        "type": "text",
+        "multiple": true,
+        "name": "other_participants"
+      },
+      {
+        "type": "array",
+        "name": "record",
+        "sub": [
+          {
+            "type": "text",
+            "name": "insert_conversation"
+          },
+          {
+            "type": "text",
+            "name": "1"
+          },
+          {
+            "type": "text",
+            "name": "query_user"
+          }
+        ]
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": true,
+        "meta": []
+      },
+      {
+        "name": "query_process",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Process",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Process"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Process.id",
+                  "field": "Process.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.ProcessId}}",
+                  "data": {
+                    "table": "Process",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT id\nFROM Process\nWHERE id = :P1 /* {{$_POST.ProcessId}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.ProcessId}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "query_company",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Company_Account",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Company_Account"
+            },
+            "joins": [],
+            "query": "SELECT id\nFROM Company_Account\nWHERE id = :P1 /* {{$_POST.companyid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.companyid}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Company_Account.id",
+                  "field": "Company_Account.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.companyid}}",
+                  "data": {
+                    "table": "Company_Account",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "outputType": "object",
+        "type": "dbconnector_single"
+      },
+      {
+        "name": "update",
+        "module": "dbupdater",
+        "action": "update",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "update",
+            "values": [
+              {
+                "table": "Process",
+                "column": "Chat_started",
+                "type": "boolean",
+                "value": "1"
+              }
+            ],
+            "table": "Process",
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "id",
+                  "field": "id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.ProcessId}}",
+                  "data": {
+                    "column": "id"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "UPDATE Process\nSET Chat_started = '1'\nWHERE id = :P1 /* {{$_POST.ProcessId}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.ProcessId}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "insert_conversation",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Conversation",
+                "column": "Type",
+                "type": "text",
+                "value": "Process"
+              },
+              {
+                "table": "Conversation",
+                "column": "Creator",
+                "type": "text",
+                "value": "{{identity}}"
+              },
+              {
+                "table": "Conversation",
+                "column": "ProcessId",
+                "type": "text",
+                "value": "{{query_process.id}}"
+              },
+              {
+                "table": "Conversation",
+                "column": "Companyid",
+                "type": "text",
+                "value": "{{query_company.id}}"
+              }
+            ],
+            "table": "Conversation",
+            "returning": "id",
+            "query": "INSERT INTO Conversation\n(Type, Creator, ProcessId, Companyid) VALUES ('Process', :P1 /* {{identity}} */, :P2 /* {{query_process.id}} */, :P3 /* {{query_company.id}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{identity}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{query_process.id}}"
+              },
+              {
+                "name": ":P3",
+                "type": "expression",
+                "value": "{{query_company.id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "insert_participant_currentUser",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Participants",
+                "column": "ConversationId",
+                "type": "text",
+                "value": "{{insert_conversation.identity}}"
+              },
+              {
+                "table": "Participants",
+                "column": "UserId",
+                "type": "text",
+                "value": "{{identity}}"
+              }
+            ],
+            "table": "Participants",
+            "returning": "id",
+            "query": "INSERT INTO Participants\n(ConversationId, UserId) VALUES (:P1 /* {{insert_conversation.identity}} */, :P2 /* {{identity}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{insert_conversation.identity}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{identity}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "repeat",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{$_POST.other_participants.split(',')}}",
+          "outputFields": [],
+          "exec": {
+            "steps": [
+              {
+                "name": "query_user",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Users",
+                        "column": "id"
+                      }
+                    ],
+                    "table": {
+                      "name": "Users"
+                    },
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Users.id",
+                          "field": "Users.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{$value}}",
+                          "data": {
+                            "table": "Users",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT id\nFROM Users\nWHERE id = :P1 /* {{$value}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{$value}}"
+                      }
+                    ]
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "insert_other_participants",
+                "module": "dbupdater",
+                "action": "insert",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "insert",
+                    "values": [
+                      {
+                        "table": "Participants",
+                        "column": "ConversationId",
+                        "type": "text",
+                        "value": "{{insert_conversation.identity}}"
+                      },
+                      {
+                        "table": "Participants",
+                        "column": "UserId",
+                        "type": "text",
+                        "value": "{{query_user.id}}"
+                      }
+                    ],
+                    "table": "Participants",
+                    "returning": "id",
+                    "query": "INSERT INTO Participants\n(ConversationId, UserId) VALUES (:P1 /* {{insert_conversation.identity}} */, :P2 /* {{query_user.id}} */)",
+                    "params": [
+                      {
+                        "name": ":P1",
+                        "type": "expression",
+                        "value": "{{insert_conversation.identity}}"
+                      },
+                      {
+                        "name": ":P2",
+                        "type": "expression",
+                        "value": "{{query_user.id}}"
+                      }
+                    ]
+                  }
+                },
+                "meta": [
+                  {
+                    "name": "identity",
+                    "type": "text"
+                  },
+                  {
+                    "name": "affected",
+                    "type": "number"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Conversation/Conversation_starters/Process_conversation/list_currentUser_processes_without_chat"
+        }
+      }
+    ]
+  }
+}

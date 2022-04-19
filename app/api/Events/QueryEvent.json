@@ -1,0 +1,363 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      },
+      {
+        "type": "text",
+        "name": "companyid"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_currentUser_invites",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Event_invites",
+                "column": "EventId"
+              }
+            ],
+            "table": {
+              "name": "Event_invites"
+            },
+            "joins": [],
+            "query": "SELECT EventId\nFROM Event_invites\nWHERE UserId = :P1 /* {{security.identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{security.identity}}"
+              }
+            ],
+            "wheres": {
+              "condition": "OR",
+              "rules": [
+                {
+                  "id": "Event_invites.UserId",
+                  "field": "Event_invites.UserId",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Event_invites",
+                    "column": "UserId",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "EventId",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "repeat_currentUser_invites",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{query_currentUser_invites}}",
+          "outputFields": [
+            "EventId"
+          ],
+          "exec": {
+            "steps": [
+              {
+                "name": "query_event",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Events",
+                        "column": "id"
+                      },
+                      {
+                        "table": "Users",
+                        "column": "imgUrl"
+                      },
+                      {
+                        "table": "Events",
+                        "column": "Description"
+                      },
+                      {
+                        "table": "Events",
+                        "column": "EventTitle"
+                      },
+                      {
+                        "table": "Events",
+                        "column": "Creator"
+                      },
+                      {
+                        "table": "Events",
+                        "column": "EventStartDate"
+                      }
+                    ],
+                    "table": {
+                      "name": "Events"
+                    },
+                    "joins": [
+                      {
+                        "table": "Users",
+                        "column": "*",
+                        "type": "INNER",
+                        "clauses": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "table": "Users",
+                              "column": "id",
+                              "operator": "equal",
+                              "value": {
+                                "table": "Events",
+                                "column": "Creator"
+                              },
+                              "operation": "="
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "query": "SELECT Events.id, Users.imgUrl, Events.Description, Events.EventTitle, Events.Creator, Events.EventStartDate\nFROM Events\nINNER JOIN Users ON (Users.id = Events.Creator)\nWHERE Events.id = :P1 /* {{EventId}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{EventId}}"
+                      }
+                    ],
+                    "wheres": {
+                      "condition": "OR",
+                      "rules": [
+                        {
+                          "id": "Events.id",
+                          "field": "Events.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{EventId}}",
+                          "data": {
+                            "table": "Events",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    }
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "imgUrl",
+                    "type": "text"
+                  },
+                  {
+                    "name": "Description",
+                    "type": "text"
+                  },
+                  {
+                    "name": "EventTitle",
+                    "type": "text"
+                  },
+                  {
+                    "name": "Creator",
+                    "type": "text"
+                  },
+                  {
+                    "name": "EventStartDate",
+                    "type": "datetime"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "query_event_invites",
+                "module": "dbconnector",
+                "action": "select",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Users",
+                        "column": "imgUrl"
+                      },
+                      {
+                        "table": "Users",
+                        "column": "id"
+                      },
+                      {
+                        "table": "Users",
+                        "column": "LastName"
+                      },
+                      {
+                        "table": "Users",
+                        "column": "FirstName"
+                      }
+                    ],
+                    "table": {
+                      "name": "Event_invites"
+                    },
+                    "joins": [
+                      {
+                        "table": "Users",
+                        "column": "*",
+                        "type": "INNER",
+                        "clauses": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "table": "Users",
+                              "column": "id",
+                              "operator": "equal",
+                              "value": {
+                                "table": "Event_invites",
+                                "column": "UserId"
+                              },
+                              "operation": "="
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "query": "SELECT Users.imgUrl, Users.id, Users.LastName, Users.FirstName\nFROM Event_invites\nINNER JOIN Users ON (Users.id = Event_invites.UserId)\nWHERE Event_invites.EventId = :P1 /* {{query_event.id}} */ AND Users.id <> :P2 /* {{query_event.Creator}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{query_event.id}}"
+                      },
+                      {
+                        "operator": "not_equal",
+                        "type": "expression",
+                        "name": ":P2",
+                        "value": "{{query_event.Creator}}"
+                      }
+                    ],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Event_invites.EventId",
+                          "field": "Event_invites.EventId",
+                          "type": "string",
+                          "operator": "equal",
+                          "value": "{{query_event.id}}",
+                          "data": {
+                            "table": "Event_invites",
+                            "column": "EventId",
+                            "type": "text"
+                          },
+                          "operation": "="
+                        },
+                        {
+                          "id": "Users.id",
+                          "field": "Users.id",
+                          "type": "double",
+                          "operator": "not_equal",
+                          "value": "{{query_event.Creator}}",
+                          "data": {
+                            "table": "Users",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "<>"
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    }
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "imgUrl",
+                    "type": "text"
+                  },
+                  {
+                    "name": "id",
+                    "type": "text"
+                  },
+                  {
+                    "name": "LastName",
+                    "type": "text"
+                  },
+                  {
+                    "name": "FirstName",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "array",
+                "type": "dbconnector_select"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "EventId",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

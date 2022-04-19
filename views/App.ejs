@@ -1,0 +1,1869 @@
+<dmx-serverconnect id="Conversation_view" url="/api/Conversation/Conversations_query/Query_conservation" dmx-param:convo_id="Conversation_id.value" sockets="true"></dmx-serverconnect>
+<dmx-serverconnect id="currentUser_processes_wihout_chat" url="/api/Conversation/Conversation_starters/Process_conversation/list_currentUser_processes_without_chat" dmx-param:convo_id="Conversation_id.value" sockets="true" dmx-param:companyid="company_select.value"></dmx-serverconnect>
+<dmx-serverconnect id="User_notifications" url="/api/Notification/Query_notifications" dmx-param:companyid="company_select.value"></dmx-serverconnect>
+<dmx-serverconnect id="Conversation_participants" url="/api/Conversation/Conversations_query/Participants" dmx-param:convo_id="Conversation_id.value" sockets="true"></dmx-serverconnect>
+<dmx-serverconnect id="Conversation_messages_list" url="/api/Conversation/Chat_messages/Query_messages" dmx-param:convo_id="Conversation_id.value" sockets="true" dmx-on:success="chat_messages_scroll.goto('#next');delete_chat_notification_form.submit()"></dmx-serverconnect>
+<dmx-serverconnect id="EventsQuery" url="/api/Events/QueryEvent" sockets="true"></dmx-serverconnect>
+<dmx-serverconnect id="Processs_view" url="/api/Processes/Process_view" dmx-param:proceesid="Process_id.value" sockets="true"></dmx-serverconnect>
+<dmx-serverconnect id="Pinned_messaged" url="/api/Conversation/Conversations_query/Pinned_msg" dmx-param:id="Conversation_view.data.query.Conversation_pinned_message_id"></dmx-serverconnect>
+<script is="dmx-flow" id="direct_chat_users_flow" type="text/dmx-flow" autorun>[
+  {
+    serverConnect: {
+      url: "/api/Conversation/Chat_list_display/Direct_chats",
+      site: "Taskbit",
+      name: "sc",
+      output: true
+    }
+  },
+  {
+    repeat: {
+      repeat: "{{sc.data.repeat_currentUser}}",
+      outputFields: [],
+      exec: {
+        steps: {
+          repeat: {
+            repeat: "{{repeat_query}}",
+            outputFields: ["id"],
+            exec: {
+              steps: {
+                run: {action: "{{Dm_userId.add(UserId)}}", output: true}
+              }
+            },
+            name: "repeat_user_list",
+            output: true
+          }
+        }
+      },
+      name: "repeat_chat_list",
+      output: true
+    }
+  }
+]</script>
+<script is="dmx-flow" id="Task_chat_users_flow" type="text/dmx-flow">[
+  {
+    serverConnect: {
+      url: "/api/Conversation/Conversations_query/Participants",
+      site: "Taskbit",
+      params: {convo_id: "{{Conversation_id.value}}"},
+      name: "sc",
+      output: true
+    }
+  },
+  {
+    repeat: {
+      repeat: "{{sc.data.query_participants}}",
+      outputFields: ["UserId"],
+      exec: {
+        steps: {
+          run: {action: "{{chat_participants_id.add(UserId)}}"}
+        }
+      },
+      name: "repeat",
+      output: true
+    }
+  }
+]</script>
+<script is="dmx-flow" id="Process_chat_users_flow" type="text/dmx-flow">[
+  {
+    serverConnect: {
+      url: "/api/Conversation/Chat_list_display/Direct_chats",
+      site: "Taskbit",
+      name: "sc",
+      output: true
+    }
+  },
+  {
+    repeat: {
+      repeat: "{{sc.data.repeat_currentUser}}",
+      outputFields: [],
+      exec: {
+        steps: {
+          repeat: {
+            repeat: "{{repeat_query}}",
+            outputFields: ["id"],
+            exec: {
+              steps: {
+                run: {action: "{{Dm_userId.add(UserId)}}", output: true}
+              }
+            },
+            name: "repeat_user_list",
+            output: true
+          }
+        }
+      },
+      name: "repeat_chat_list",
+      output: true
+    }
+  }
+]</script>
+<dmx-value id="inner_page__toggle" dmx-bind:value="'subscription'"></dmx-value>
+<dmx-smooth-scroll id="chat_messages_scroll" speed="1000"></dmx-smooth-scroll>
+<div class="modal" id="invite_users_4_chat" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Invite users</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dmx-array id="Process_task_chat_invite_ids"></dmx-array>
+                <form id="Task_process_invites_form" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Invite_process_task_participants" dmx-on:success="invite_users_4_chat.Task_process_invites_form.reset();invite_users_4_chat.Process_task_chat_invite_ids.empty();invite_users_4_chat.hide();toasts.show({message: 'Users invited!'})">
+                    <input id="Task_conversation_id" name="conversation_id" class="form-control" type="hidden">
+                    <input id="Task_chat_invite_ids" name="Users[]" class="form-control" dmx-bind:value="Process_task_chat_invite_ids.items" type="hidden">
+                </form>
+                <div class="row justify-content-center" id="Users_row">
+                    <div class="col-12 mb-3 d-flex" style="cursor: pointer;" dmx-on:click="NewEmployee.show()">
+                        <p>Select invited users</p>
+                    </div>
+                    <div class="col-12">
+                        <div class="row justify-content-center" is="dmx-repeat" id="Repeat_Users_4_Process_Task" dmx-bind:repeat="All_users.data.query">
+                            <div class="d-flex rounded align-items-center mb-3 pt-2 pb-2 bg-primary col-12" dmx-hide="chat_participants_id.items.contains(userId)"><img width="30" height="30" class="rounded-circle me-2" src="/assets/Img/avatar-11.jpg" dmx-bind:src="imgUrl">
+                                <div class="d-flex flex-column">
+                                    <p class="fw-bold" dmx-text="FirstName+' '+LastName">Asad kanten&nbsp;</p>
+                                    <p dmx-text="Role">Sales</p>
+                                </div>
+                                <i class="bi-circle icon-left-auto" dmx-on:click="invite_users_4_chat.Process_task_chat_invite_ids.add(userId)" dmx-hide="Process_task_chat_invite_ids.items.contains(userId)"></i>
+                                <i class="bi-check-circle-fill icon-left-auto" dmx-show="Process_task_chat_invite_ids.items.contains(userId)" dmx-on:click="invite_users_4_chat.Process_task_chat_invite_ids.remove(userId)"></i>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" dmx-on:click="invite_users_4_chat.Task_process_invites_form.submit()">Invite users</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" is="dmx-bs5-modal" tabindex="-1" id="Conversation">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" dmx-text="Chat_switch.value">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container  visually-hidden" id="Direct_conversation_container" dmx-show="(Chat_switch.value == 'Start new direct chat')">
+                    <form id="form_direct_chat_create" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Conversation_starters/Direct_conversation_create" dmx-on:success="toasts.show({message: 'Chat created'})">
+                        <input id="direct_chat_company_id" name="companyid" type="hidden" class="form-control" dmx-bind:value="content.company_select.value">
+                        <input id="nd_participant_id" name="2nd_participant_id" type="hidden" class="form-control" dmx-bind:value="nd_participant_input_set.value">
+                    </form>
+
+                    <p class="mb-3">Select a user to continue</p>
+
+                    <div class="row justify-content-center" is="dmx-repeat" id="Repeat_Users" dmx-bind:repeat="All_users.data.query">
+
+                        <div class="d-flex rounded align-items-center mb-3 pt-2 pb-2 bg-primary col-12" dmx-on:click="User_id.setValue(id)" dmx-hide="((id == user_company.data.User.id) || Dm_userId.items.contains(userId))"><img width="30" height="30" class="rounded-circle me-2" dmx-bind:src="imgUrl">
+                            <div class="d-flex flex-column">
+                                <p class="fw-bold" dmx-text="FirstName+' '+LastName">Asad kanten&nbsp;</p>
+                                <p dmx-text="Role">Sales</p>
+                            </div>
+                            <i class="bi-circle icon-left-auto" dmx-show="(nd_participant_input_set.value != userId)" dmx-on:click="nd_participant_input_set.setValue(userId)"></i>
+                            <i class="bi-check-circle-fill icon-left-auto" dmx-show="(nd_participant_input_set.value == userId)"></i>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="container visually-hidden" id="Task_conversation_container" dmx-show="(Chat_switch.value == 'Start new task conversation')">
+                    <dmx-array id="users_4_task_chat"></dmx-array>
+                    <form id="New_task_chat_form" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Conversation_starters/Task_conversation/Task_conversation_create" dmx-on:success="toasts.show({message: 'Chat created', title: 'Success'});Conversation.hide()">
+                        <div class="d-flex flex-column mb-3">
+                            <p class="mb-3">Select task</p><select id="Task_select" class="form-control" dmx-bind:options="All_tasks_query.data.query_currentUser_Tasks.where(Chat_started, 1, '!=')" optiontext="TaskTitle" optionvalue="TaskId" name="Task_select">
+                            </select>
+                            <input id="task_chat_company_id" name="companyid" class="form-control" dmx-bind:value="content.company_select.value" type="hidden">
+                            <input id="Task_chat_invites_users_id" name="Task_chat_invites_users_id[]" class="form-control" dmx-bind:value="users_4_task_chat.items" type="hidden">
+                        </div>
+                    </form>
+
+                    <p class="mb-3">Choose conversation participants</p>
+                    <div class="row justify-content-center" is="dmx-repeat" id="Repeat_Users_4_task_chat_invite" dmx-bind:repeat="All_users.data.query">
+                        <div class="d-flex rounded align-items-center mb-3 pt-2 pb-2 bg-primary col-12" dmx-on:click="User_id.setValue(id)" dmx-hide="(userId == user_company.data.User.id)"><img width="30" height="30" class="rounded-circle me-2" src="/assets/Img/avatar-11.jpg" dmx-bind:src="imgUrl">
+                            <div class="d-flex flex-column">
+                                <p class="fw-bold" dmx-text="FirstName+' '+LastName">Asad kanten&nbsp;</p>
+                                <p dmx-text="Role">Sales</p>
+                            </div>
+                            <i class="bi-circle icon-left-auto" dmx-on:click="Conversation.users_4_task_chat.add(userId)" dmx-hide="Conversation.users_4_task_chat.items.contains(userId)"></i>
+                            <i class="bi-check-circle-fill icon-left-auto" dmx-show="Conversation.users_4_task_chat.items.contains(userId)" dmx-on:click="Conversation.users_4_task_chat.remove(userId)"></i>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="container" id="Process_conversation_container" dmx-show="(Chat_switch.value == 'Start new process conversation')">
+                    <dmx-array id="process_chat_other_participant_ids"></dmx-array>
+                    <form id="process_chat_form" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Conversation_starters/Process_conversation/Process_conversation_create" dmx-on:success="Conversation.process_chat_form.reset();Conversation.hide()">
+                        <div class="d-flex flex-column mb-3">
+                            <p class="mb-3">Select Process</p><select id="processes_4_chat" class="form-control" name="ProcessId" dmx-bind:options="currentUser_processes_wihout_chat.data.query_processes" optiontext="ProcessTitle" optionvalue="id">
+                            </select>
+                            <input id="companyid_4_process_chat" name="companyid" type="hidden" class="form-control" dmx-bind:value="company_select.value">
+                            <input id="process_other_participants" name="other_participants" type="hidden" class="form-control" dmx-bind:value="process_chat_other_participant_ids.items">
+                        </div>
+                    </form>
+
+                    <p class="mb-3">Choose conversation participants</p>
+                    <div class="row justify-content-center" is="dmx-repeat" id="Repeat_process_other_participants" dmx-bind:repeat="All_users.data.query">
+                        <div class="d-flex rounded align-items-center mb-3 pt-2 pb-2 bg-primary col-12" dmx-on:click="User_id.setValue(id)" dmx-hide="(userId == user_company.data.User.id)"><img width="30" height="30" class="rounded-circle me-2" src="/assets/Img/avatar-11.jpg" dmx-bind:src="imgUrl">
+                            <div class="d-flex flex-column">
+                                <p class="fw-bold" dmx-text="FirstName+' '+LastName">Asad kanten&nbsp;</p>
+                                <p dmx-text="Role">Sales</p>
+                            </div>
+                            <i class="bi-circle icon-left-auto" dmx-on:click="Conversation.process_chat_other_participant_ids.add(userId)" dmx-hide="process_chat_other_participant_ids.items.contains(userId)"></i>
+                            <i class="bi-check-circle-fill icon-left-auto" dmx-show="process_chat_other_participant_ids.items.contains(userId)" dmx-on:click="Conversation.process_chat_other_participant_ids.remove(userId)"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" dmx-show="(Chat_switch.value == 'Start new direct chat')" dmx-on:click="form_direct_chat_create.submit(undefined);Conversation.hide()" id="submit_direct_chat_btn">Continue</button>
+                <button type="button" class="btn btn-primary" dmx-show="(Chat_switch.value == 'Start new task conversation')" dmx-on:click="New_task_chat_form.submit(undefined)" id="submit_task_chat_btn">Continue</button>
+                <button type="button" class="btn btn-primary" dmx-show="(Chat_switch.value == 'Start new process conversation')" dmx-on:click="Conversation.process_chat_form.submit()" id="submit_process_chat_btn">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Wappler include head-page="layouts/AppTemplate" is="dmx-app" id="App" appConnect="local" fontawesome_5="cdn" bootstrap5="local" bootstrap_icons="cdn" components="{dmxBootstrap5Collapse:{},dmxBootstrap5Navigation:{},dmxScheduler:{},dmxMoment:{},dmxCalendar:{},dmxFormatter:{},dmxBootstrap5Offcanvas:{},dmxStateManagement:{},dmxRouting:{},dmxBrowser:{},dmxSmoothScroll:{},dmxDataTraversal:{},dmxValidator:{},dmxSockets:{},dmxBootstrap5Modal:{},dmxBootstrap5Popovers:{},dmxBootstrap5Tooltips:{},dmxBootstrap5Toasts:{}}" moment_2="cdn" -->
+
+
+
+<div class="modal" id="Chat_pin" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pin message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="style4 rounded-pill text-center mb-3" style="cursor: pointer;" dmx-on:click="Pin_msg_2_conversation.pin_convo_id.setValue(Conversation_id.value);Pin_msg_2_conversation.pin_msg_id.setValue(msg_id.value);Pin_msg_2_conversation.submit();Chat_pin.hide()" dmx-show="(((user_company.data.User.Company_founder == 1) || (user_company.data.User.id == Conversation_view.data.query.user_id)) || (msg_id.value != Conversation_view.data.query.Conversation_pinned_message_id))">Pin to top</p>
+                <p class="style4 rounded-pill text-center" dmx-on:click="create_chat_pins.Create_convo_id.setValue(Conversation_id.value);create_chat_pins.Create_msg_id.setValue(msg_id.value);create_chat_pins.submit();Chat_pin.hide()">Add to my pins</p>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="Reminder" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create a reminder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reminder_form" is="dmx-serverconnect-form" method="post" action="/api/Reminder/Create_reminder" dmx-on:success="toasts.show({message: 'Reminder created '});Reminder.reminder_form.reset();Reminder.hide()">
+                    <div class="mb-3">
+                        <label for="ReminderTitle" class="form-label">Reminder title</label>
+                        <input type="text" class="form-control" id="ReminderTitle" name="ReminderTitle" aria-describedby="input9_help">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ReminderDescription" class="form-label">Reminder description</label>
+                        <textarea id="ReminderDescription" class="form-control" name="ReminderDescription"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ReminderType" class="form-label">Reminder type</label>
+                        <select id="ReminderType" class="form-control" name="ReminderType">
+                            <option selected="" value="Personal">Personal</option>
+                            <option value="Task">Task</option>
+                            <option value="Process">Process</option>
+                            <option value="Event">Event</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ReminderDate" class="form-label">Date and time</label>
+                        <input type="datetime-local" class="form-control" id="ReminderDate" name="ReminderDate" aria-describedby="input11_help">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" dmx-on:click="Reminder.reminder_form.submit()">Create reminder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal" id="chat_attachment" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Choose files</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="Chat_form2" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Chat_messages/Create_chat_messages" dmx-on:success="chat_attachment.Chat_form2.reset()">
+                    <input id="convo_id2" name="convo_id" type="hidden" class="form-control" dmx-bind:value="Conversation_id.value">
+                    <div class="mb-3">
+                        <label for="Files_attach_chat" class="form-label">File(s) upload</label>
+                        <input type="file" class="form-control" id="Files_attach_chat" name="Files[]" aria-describedby="input9_help" multiple="true">
+                        <small id="input9_help" class="form-text text-muted">Select here your image for upload.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" dmx-on:click="chat_attachment.Chat_form2.submit();chat_attachment.hide()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<meta name="ac:route" content="/App">
+
+<div class="offcanvas offcanvas-bottom off-canvas" id="offcanvas_SectionMenu" is="dmx-bs5-offcanvas" tabindex="-1">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Offcanvas title</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="row">
+            <div class="sidebar col-12 d-print-none visually-hidden" id="Settings_column_3">
+                <div class="row d-print-none visually-hidden" id="User_details_row">
+                    <div class="col">
+                        <div class="d-flex align-items-center">
+                            <p class="fw-bold">Asad kanten&nbsp;</p>
+                            <i class="bi-chat-left-text icon-left-auto"></i>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <form id="Update_user_form">
+                                <div class="d-flex">
+                                    <div class="mb-3 me-3">
+                                        <label for="UpdateUser_Firstname" class="form-label">First name</label>
+                                        <input type="text" class="form-control" id="input1" name="input1" aria-describedby="input1_help">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="UpdateUser_Lastname" class="form-label">Last name</label>
+                                        <input type="text" class="form-control" id="input2" name="input2" aria-describedby="input1_help">
+                                    </div>
+
+                                </div>
+                                <div class="mb-3">
+                                    <label for="input3" class="form-label">Email</label>
+                                    <input type="text" class="form-control" id="input3" name="input3" aria-describedby="input1_help">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="UpdateUser_Role" class="form-label">Role</label>
+                                    <input type="text" class="form-control" id="input4" name="input4" aria-describedby="input1_help">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="input5" class="form-label">Password</label>
+                                    <input type="text" class="form-control" id="input5" name="input5" aria-describedby="input1_help">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <h4 wappler-command="editContent">Permissions</h4>
+                            <div class="d-flex">
+                                <form id="form1">
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Create_Update_team_Tasks" wappler-command="editContent">Create and update teams tasks</label>
+                                        <input class="form-check-input" type="checkbox" value="" id="input6" name="input6">
+                                    </div>
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Create_Update_team_Events" wappler-command="editContent">Create and update teams events</label>
+                                        <input class="form-check-input" type="checkbox" value="" id="input8" name="input8">
+                                    </div>
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Account_settings_and_subscription" wappler-command="editContent">Add and update users</label>
+                                        <input class="form-check-input" type="checkbox" value="" id="input7" name="input7">
+                                    </div>
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Company_founder" wappler-command="editContent">Account settings and subscription</label>
+                                        <input class="form-check-input" type="checkbox" value="" id="input10" name="input10">
+                                    </div>
+                                    <div class="mb-3">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="row_subscriptionDetails">
+                    <div class="col-12 mb-2">
+                        <h5>Actions</h5>
+                    </div>
+                    <div class="col d-flex flex-column justify-content-start">
+                        <button id="btn7" class="btn btn-warning">Change subscription</button>
+                        <button id="btn8" class="btn btn-primary mt-2">Turn off auto-renew</button>
+                        <div class="d-flex border-top mt-5 pt-2"><button id="btn9" class="btn w-100 btn-dark">Delete account</button></div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 sidebar d-print-none visually-hidden" id="Task_view_column_3">
+                <div class="row">
+                    <div class="col-12"><button id="btn_startChat" class="btn w-100 btn-sm bg-info mb-2">Start a chat on this process</button><button id="btn_GotoConvo" class="btn btn-sm green-btn w-100">Go to process conversation</button></div>
+                    <div class="col-12 mt-5 mb-5">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-0">Attachments</h5>
+
+                            </div>
+                            <div class="pt-2 pb-2 col-12">
+                                <div class="d-flex justify-content-between align-items-center bg-info pt-2 pb-2 ps-2 pe-2"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                    <p class="small">Enter your content here</p><i class="bi-cloud-download"></i>
+                                </div>
+
+
+
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-12">
+                        <h5 class="mb-2">Notes</h5>
+                        <div class="d-flex"><textarea id="text1" class="form-control"></textarea></div>
+                    </div>
+
+                    <div class="col mt-3">
+                        <button id="btn1" class="btn btn-primary text-center completed_btn w-100">Mark as completed<i class="bi-check-circle-fill Menu-toggle"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="col-12 sidebar d-print-none visually-hidden" id="Add_task_column_3">
+                <div class="row">
+                    <div class="col-12"><button id="btn_startChat1" class="btn w-100 btn-sm bg-info mb-2">Start a chat on this process</button><button id="btn_GotoConvo1" class="btn btn-sm green-btn w-100">Go to process conversation</button></div>
+                    <div class="col-12 mt-5 mb-5">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-0">Attachments</h5>
+
+                            </div>
+                            <div class="pt-2 pb-2 col-12">
+                                <div class="d-flex justify-content-between align-items-center bg-info pt-2 pb-2 ps-2 pe-2"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                    <p class="small">Enter your content here</p><i class="bi-cloud-download"></i>
+                                </div>
+
+
+
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-12">
+                        <h5 class="mb-2">Actions</h5>
+                    </div>
+
+                    <div class="col mt-3">
+                        <button id="btn5" class="btn btn-primary text-center completed_btn w-100">Update process</button>
+                        <button id="btn6" class="btn text-light bg-dark w-100 mt-3">Delete process</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 sidebar d-print-none visually-hidden" id="Chat_column_3">
+                <div class="row">
+                    <div class="col d-flex align-items-center mb-3">
+                        <h5>Participants</h5>
+                        <button id="btn3" class="btn ms-auto btn-primary btn-sm">Invite others</button>
+                    </div>
+                    <div class="col-12 d-flex align-items-center">
+                        <img width="30" height="30" class="rounded-circle me-2">
+                        <p>Enter your content here</p>
+                        <i class="bi-chat-left-text icon-left-auto"></i>
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-12 mb-3">
+                        <h5>My pins for this chat</h5>
+                    </div>
+                    <div class="col">
+                        <div class="row">
+                            <div class="col-12 d-flex align-items-center">
+                                <p class="small me-2">1.</p>
+                                <p class="small fw-bold">Anna winkolov</p>
+                                <p class="small ms-auto">20/10/21 9:53am</p>
+                            </div>
+                            <div class="col-12 mt-2 mb-2">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor&nbsp; facilisi etiam dignissim. Ni</p>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center bg-info pt-2 pb-2 ps-2 pe-2 w-100"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                            <p class="small">Enter your content here</p><i class="bi-cloud-download check-icon"></i>
+                                        </div>
+
+                                    </div>
+                                    <div class="col"></div>
+                                </div>
+                            </div>
+                            <div class="col d-flex">
+                                <p class="mark small w-auto">Delete</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<section id="Chat" class="dashBard-section visually-hidden">
+    <div class="wappler-block container-fluid style19">
+        <div class="row no-gutters row-cols-12 row-cols-sm-12">
+            <div class="bg-info sidebar col-sm-4 col-md-4 order-2 order-lg-first col-1" style="" id="Chat_column_1">
+                <div class="row style29" id="Direct_chats_row">
+                    <div class="col-12 mb-2 d-flex align-items-center">
+                        <h5 class="mb-0">Direct chats<i class="bi-plus-circle-fill dashboard-left-sideBar-addBtn" style="cursor: pointer;" dmx-on:click="Chat_switch.setValue('Start new direct chat');Conversation.show()"></i></h5>
+
+                    </div>
+                    <div class="col-12">
+                        <div class="row pe-1" is="dmx-repeat" id="Repeat_direct_chat_list" dmx-bind:repeat="Direct_conversation_chat_list.data.repeat_currentUser">
+                            <div class="col-12 mb-2" style="cursor: pointer;" dmx-on:click="Conversation_id.setValue(id);delete_chat_notification_form.submit()" dmx-repeat:repeat_drect_chat_list_subquery="repeat_query">
+                                <div class="d-flex rounded bg-white pt-3 pb-3 ps-3 pe-3">
+                                    <div class="d-flex ps-1 pe-1"><img class="rounded" width="40" height="40" dmx-bind:src="imgUrl"></div>
+                                    <div class="d-flex flex-column w-100 justify-content-center ms-2">
+                                        <p class="fw-bold" dmx-text="FirstName+' '+LastName">Anna</p>
+                                        <p class="style34 border-start mt-1 ms-2" dmx-text="query_chats.ChatText ? query_chats.ChatText : query_chats.Chat_Type">Enter your content here</p>
+
+
+                                    </div>
+                                    <div class="d-flex">
+                                        <p class="text-center rounded-circle bg-primary style13 fw-bold" dmx-text="User_notifications.data.query.where(`Conversationi_id`, ConversationId, '==').count()" dmx-hide="(User_notifications.data.query.where(`Conversationi_id`, ConversationId, '==').count() < 1)">10</p>
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row style29" id="Task_chat_list_row">
+                    <div class="col-12 mb-2">
+                        <h5>Task chat<i class="bi-plus-circle-fill dashboard-left-sideBar-addBtn" style="cursor: pointer;" dmx-on:click="Chat_switch.setValue('Start new task conversation');Conversation.show()"></i>
+                        </h5>
+                    </div>
+                    <div class="col-12">
+                        <div class="row pe-1" is="dmx-repeat" id="repeat_task_conversation_list" dmx-bind:repeat="Task_conversation_chat_list.data.repeat_currentUser">
+                            <div class="col-12" dmx-on:click="Conversation_id.setValue(id);delete_chat_notification_form.submit()" dmx-repeat:repeat_task_convos="repeat_coversation" id="repeat_task_convos">
+                                <div class="d-flex rounded bg-white pt-3 pb-3 ps-3 pe-3">
+                                    <div class="d-flex ps-1 pe-1"><img class="rounded" width="40" height="40" dmx-bind:src="imgUrl"></div>
+                                    <div class="d-flex flex-column w-100 justify-content-center ms-2">
+                                        <p class="fw-bold" dmx-text="TaskTitle">Enter your content here</p>
+                                        <p dmx-text="query1.ChatText" class="small">Enter your content here</p>
+
+
+                                    </div>
+                                    <div class="d-flex">
+                                        <p class="text-center rounded-circle bg-primary style13 fw-bold" dmx-text="User_notifications.data.query.where(`Conversationi_id`, ConversationId, '==').count()" dmx-hide="(User_notifications.data.query.where(`Conversationi_id`, ConversationId, '==').count() < 1)">10</p>
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row style29" id="Processes_chat_list_row">
+                    <div class="col-12 mb-2">
+                        <h5>Processes chat<i class="bi-plus-circle-fill dashboard-left-sideBar-addBtn" style="cursor: pointer;" dmx-on:click="Chat_switch.setValue('Start new process conversation');Conversation.show()"></i></h5>
+                    </div>
+                    <div class="col-12">
+                        <div class="row pe-1" is="dmx-repeat" id="repeat_process_conversation_list" dmx-bind:repeat="Process_conversation_chat_list.data.repeat_currentUser">
+                            <div class="col-12" dmx-on:click="Conversation_id.setValue(ConversationId);delete_chat_notification_form.submit()">
+                                <div class="d-flex rounded bg-white pt-3 pb-3 ps-3 pe-3">
+                                    <div class="d-flex ps-1 pe-1"><img class="rounded" width="40" height="40" dmx-bind:src="query.imgUrl"></div>
+                                    <div class="d-flex flex-column w-100 justify-content-center ms-2">
+                                        <p class="fw-bold" dmx-text="query.ProcessTitle">Enter your content here</p>
+                                        <p class="me-2 small" dmx-text="query_participants.count()+' other participant(s)'">Enter your content here</p>
+
+
+                                    </div>
+                                    <div class="d-flex">
+                                        <p class="text-center rounded-circle bg-primary style13 fw-bold" dmx-text="User_notifications.data.query.where(`Conversationi_id`, ConversationId, '==').count()" dmx-hide="(User_notifications.data.query.where(`Conversationi_id`, ConversationId, '==').count() < 1)">10</p>
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="bg-secondary col-sm-5 sidebar middle order-lg-2 order-md-2 order-2" id="Chat_column_2">
+                <div class="row chat-details-top bg-secondary" id="Chat_details">
+                    <div class="col-12 mb-3 d-flex flex-row align-items-center">
+                        <div class="d-flex flex-column">
+                            <h3 dmx-text="Conversation_view.data.query.TaskTitle ? Conversation_view.data.query.TaskTitle : Conversation_view.data.query.ProcessTitle">Daily workout</h3>
+                            <p dmx-text="'Started by  '+Conversation_view.data.query.FirstName+' '+Conversation_view.data.query.LastName">Created by Asant osana</p>
+                        </div>
+                        <div class="d-flex ms-auto align-items-center">
+                            <i class="bi-info-circle-fill Check-icon"></i>
+                            <button id="btn4" class="btn btn-sm btn-warning ms-2" dmx-show="(Conversation_view.data.query.Conversation_closed == 1)">Close conversation</button>
+                        </div>
+
+                    </div>
+                    <div class="col d-flex justify-content-center">
+                        <div class="d-flex border-bottom pt-2 pb-2 w-75 justify-content-center">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                <img width="30" height="30" class="rounded-circle" dmx-bind:src="Pinned_messaged.data.query_msg.imgUrl" dmx-hide="">
+                                <p class="text-center" dmx-text="Pinned_messaged.data.query_msg.FirstName">Asad kanten</p>
+                            </div>
+                            <div class="d-flex bg-white ms-2 me-2 pt-2 pb-2 ps-2 pe-2 flex-column">
+                                <p dmx-text="Pinned_messaged.data.query_msg.ChatText" dmx-show="Pinned_messaged.data.query_msg.ChatText">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor facilisi etiam dignissim. Ni</p>
+                                <div class="d-flex justify-content-between align-items-center mb-2 pt-2 pb-2 ps-2 pe-2" dmx-show="!Pinned_messaged.data.query_msg.ChatText" dmx-repeat:repeat_pinned_attachments="Pinned_messaged.data.query_msg_attachments"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                    <p class="small ms-2 me-3" dmx-text="FileName">Enter your content here</p><i class="bi-cloud-download check-icon"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi-pin-angle-fill Check-icon" style="cursor: pointer;" dmx-on:click="msg_id.setValue(Pinned_messaged.data.query_msg.id);create_chat_pins.Create_msg_id.setValue(msg_id.value);create_chat_pins.Create_convo_id.setValue(Conversation_id.value);create_chat_pins.submit()"></i>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                </div>
+                <div class="row" dmx-bind:repeat="Conversation_messages_list.data.repeat_messages" is="dmx-repeat" id="repeat_messages" dmx-on:updated="toasts.show({message: 'my chat is updated'})">
+                    <div class="col-12 mb-3" dmx-on:updated="toasts.show({message: 'new message'})">
+
+                        <div class="d-flex justify-content-start w-100" dmx-show="(Creator != user_company.data.User.id)">
+                            <div class="d-flex flex-column align-items-center">
+                                <img width="30" height="30" class="rounded-circle" dmx-bind:src="imgUrl">
+                                <p class="text-center" dmx-text="FirstName+' '">Asad kanten</p>
+                            </div>
+                            <div class="d-flex bg-white ms-2 me-2 pt-2 pb-2 ps-2 pe-2 flex-column w-auto">
+                                <p dmx-text="ChatText" dmx-show="(Chat_Type == 'Text')">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor facilisi etiam dignissim. Ni</p>
+                                <div class="d-flex align-items-center pt-2 pb-2 ps-2 pe-2 justify-content-between" dmx-repeat:repeat_attachments="query_msg_attachments" dmx-show="(Chat_Type != 'Text')"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                    <p class="small ms-2 me-3" dmx-text="FileName">Enter your content here</p><i class="bi-cloud-download check-icon"></i>
+                                </div>
+                                <div class="d-flex">
+                                    <div class="d-flex align-items-center me-2" style="cursor: pointer;">
+                                        <i class="bi-arrow-90deg-left"></i>
+                                        <p class="text-muted ms-1 small">Reply</p>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="cursor: pointer;" dmx-on:click="msg_id.setValue(id);Chat_pin.show()">
+                                        <i class="bi-pin-angle-fill Check-icon"></i>
+                                        <p class="text-muted ms-1 small">Pin</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="d-flex justify-content-end w-100" dmx-show="(Creator == user_company.data.User.id)">
+
+                            <div class="d-flex bg-white ms-2 me-2 pt-2 pb-2 ps-2 pe-2 flex-column">
+                                <p dmx-text="ChatText" dmx-show="(Chat_Type == 'Text')">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor facilisi etiam dignissim. Ni</p>
+
+                                <div class="d-flex justify-content-between align-items-center mb-2 pt-2 pb-2 ps-2 pe-2" dmx-repeat:repeat_attachments2="query_msg_attachments" dmx-show="(Chat_Type != 'Text')"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                    <p class="small ms-2 me-3" dmx-text="FileName">Enter your content here</p><i class="bi-cloud-download check-icon"></i>
+                                </div>
+                                <div class="d-flex">
+                                    <div class="d-flex align-items-center me-2" style="cursor: pointer;">
+                                        <i class="bi-arrow-90deg-left"></i>
+                                        <p class="text-muted ms-1 small">Reply</p>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="cursor: pointer;" dmx-on:click="msg_id.setValue(id);Chat_pin.show()">
+                                        <i class="bi-pin-angle-fill Check-icon"></i>
+                                        <p class="text-muted ms-1 small">Pin</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column align-items-center">
+                                <img width="30" height="30" class="rounded-circle" dmx-bind:src="imgUrl">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col next" id="next"></div>
+                </div>
+                <div class="row bg-secondary comment_box">
+                    <div class="col d-flex align-items-center">
+                        <form id="Chat_form" class="Comment_form" is="dmx-serverconnect-form" method="post" action="/api/Conversation/Chat_messages/Create_chat_messages" dmx-on:success="Chat_form.reset();chat_messages_scroll.goto('#next')"><input id="ChatText" name="ChatText" type="text" class="form-control">
+                            <input id="convo_id" name="convo_id" type="hidden" class="form-control" dmx-bind:value="Conversation_id.value">
+                        </form>
+                        <div class="d-flex justify-content-around w-25">
+                            <i class="bi-mic-fill check-icon"></i>
+                            <i class="bi-cloud-upload-fill check-icon" dmx-on:click="chat_attachment.show()" style="cursor: pointer;"></i>
+                            <i class="fas fa-paper-plane check-icon" style="cursor: pointer;" dmx-on:click="Chat_form.submit()"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3 sidebar col-sm-3 order-lg-last d-none d-md-block order-md-last" id="Chat_column_3">
+                <div class="row">
+                    <div class="col d-flex align-items-center mb-3">
+                        <h5>Participants</h5>
+                        <button id="btn3" class="btn ms-auto btn-primary btn-sm" dmx-hide="(Conversation_view.data.query.Type == 'Direct')" dmx-on:click="invite_users_4_chat.Task_process_invites_form.Task_conversation_id.setValue(Conversation_view.data.query.id);Task_chat_users_flow.run();invite_users_4_chat.show()">Invite others</button>
+                    </div>
+                    <div class="col-12 d-flex align-items-center mb-2" dmx-repeat:repeat_chat_participants="Conversation_participants.data.query_participants" id="repeat_chat_participants">
+                        <img width="30" height="30" class="rounded-circle me-2" dmx-bind:src="imgUrl">
+                        <p dmx-text="FirstName+' '+LastName">Enter your content here</p>
+                        <i class="bi-chat-left-text icon-left-auto" dmx-hide="((Dm_userId.items.contains(UserId) || (Conversation_view.data.query.Type == Direct)) || (UserId == user_company.data.User.id))" style="cursor: pointer;" dmx-on:click="Conversation.form_direct_chat_create.nd_participant_id.setValue(UserId);Conversation.form_direct_chat_create.submit()"></i>
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-12 mb-0">
+                        <h5>My pins for this chat</h5>
+                    </div>
+                    <div class="col">
+                        <div class="row mt-2" is="dmx-repeat" id="repeat_user_current_chat_pins" dmx-bind:repeat="current_chat_pins.data.repeat_pins">
+                            <div class="col-12 d-flex align-items-center">
+                                <p class="small me-2" dmx-text="($index + 1)">1.</p>
+                                <p class="small fw-bold" dmx-text="query_messages.FirstName+' '+query_messages.LastName">Anna winkolov</p>
+                                <p class="small ms-auto" dmx-text="query_messages.Creation_date">20/10/21 9:53am</p>
+                            </div>
+                            <div class="col-12 mt-2 mb-2" dmx-show="query_messages.ChatText">
+                                <p dmx-text="query_messages.ChatText">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor&nbsp; facilisi etiam dignissim. Ni</p>
+                            </div>
+                            <div class="col-11">
+                                <div class="row" is="dmx-repeat" id="repeat_pins_attahments" dmx-bind:repeat="query_messages_attachments" dmx-show="!query_messages.ChatText">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center bg-info w-100 mb-2 pt-2 pb-2 ps-2 pe-2"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                            <p class="small" dmx-text="FileName">Enter your content here</p><i class="bi-cloud-download check-icon"></i>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col d-flex">
+                                <p class="mark small w-auto" style="cursor: pointer;" dmx-on:click="Delete_chat_pins.delete_conversation_pin_id.setValue(Conversation_pin);Delete_chat_pins.submit()">Delete</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="Task_view" class="dashBard-section visually-hidden">
+    <div class="wappler-block container-fluid style19">
+        <div class="row no-gutters row-cols-12 row-cols-sm-12">
+            <div class="bg-info sidebar col-sm-4 col-md-4 order-2 order-lg-first col-1" style="" id="Task_view_column_1">
+
+
+                <div class="row" id="mytask1">
+                    <div class="col-12 mb-3 d-flex flex-row align-items-center">
+                        <h4>My tasks</h4>
+                        <div class="d-flex ms-auto"><i class="bi-sort-alpha-up"></i>
+
+                            <p class="mark small style38 ms-auto me-2" dmx-text="(Task_status_4_userTask.value == 0 ? 'Completed' : 'Not completed')" dmx-on:click="run({condition:{if:`(Task_status_4_userTask.value == 0)`,then:{steps:{run:{action:`Task_status_4_userTask.setValue(1)`}}},else:{steps:{run:{action:`Task_status_4_userTask.setValue(0)`}}}}})" style="cursor: pointer;">Not completed</p>
+                            <i class="bi-shuffle"></i>
+                            <p class="style38 small bg-warning ms-1" dmx-text="(personal_company_tasks.value == 'my tasks' ? 'View all company tasks' : 'View only my tasks')" dmx-on:click="run({condition:{if:`(personal_company_tasks.value == \'my tasks\')`,then:{steps:{run:{action:`personal_company_tasks.setValue(\'company tasks\')`}}},else:{steps:{run:{action:`personal_company_tasks.setValue(\'my tasks\')`}}}}})" style="cursor: pointer;" dmx-show="(user_company.data.User.Company_founder == 1)">View only my tasks</p>
+                        </div>
+
+
+                    </div>
+                    <div class="col">
+                        <div class="row" is="dmx-repeat" id="repeat_my_tasks" dmx-bind:repeat="All_tasks_query.data.query_currentUser_Tasks" dmx-show="(personal_company_tasks.value == 'my tasks')">
+                            <div class="d-flex mb-3 col-12" dmx-hide="">
+
+                                <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 w-100 bg-white" id="Aded_task_container">
+                                    <div class="d-flex" style="cursor: pointer;" dmx-on:click="Task_id.setValue(content.repeat_my_tasks.0].id)">
+                                        <img class="rounded" width="40" height="40" dmx-bind:src="AvatarUrl">
+                                        <p class="fw-bold ms-2 me-2" dmx-text="TaskTitle">Title
+                                        </p>
+                                        <p dmx-text="Final_date">Enter your content here</p>
+                                        <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                    </div>
+                                    <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Task_id.setValue(content.repeat_my_tasks.0].id)">
+
+                                        <p class="ms-1 mark small" style="cursor: pointer;" dmx-on:click="task_id.setValue(TaskId);Process_id.setValue(0)">View task details</p>
+                                        <i class="bi-arrow-right icon-left-auto" dmx-show="(TaskId == task_id.value)"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" is="dmx-repeat" id="repeat_all_tasks" dmx-bind:repeat="All_company_tasks.data.query" dmx-show="(personal_company_tasks.value != 'my tasks')">
+                            <div class="d-flex mb-3 col-12" dmx-hide="">
+
+                                <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 w-100 bg-white" id="Aded_task_container1">
+                                    <div class="d-flex" style="cursor: pointer;" dmx-on:click="Task_id.setValue(content.repeat_my_tasks.0].id)">
+                                        <img class="rounded" width="40" height="40" dmx-bind:src="AvatarUrl">
+                                        <p class="fw-bold ms-2 me-2" dmx-text="TaskTitle">Title
+                                        </p>
+                                        <p dmx-text="Final_date">Enter your content here</p>
+                                        <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                    </div>
+                                    <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Task_id.setValue(content.repeat_my_tasks.0].id)">
+
+                                        <p class="ms-1 mark small" style="cursor: pointer;" dmx-on:click="task_id.setValue(id);Process_id.setValue(0)">View task details</p>
+                                        <i class="bi-arrow-right icon-left-auto" dmx-show="(id == task_id.value)"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="bg-secondary col-sm-5 sidebar middle order-lg-2 order-md-2 order-2" id="Task_view_column_2" dmx-show="task_id.value">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <h1 class="medium fw-lighter" dmx-text="TaskView.data.Task.TaskTitle">Title</h1>
+                        <p class="mark" dmx-on:click="delete_task.d_Task_id.setValue(task_id.value);delete_task.submit();task_id.setValue(0)" style="cursor: pointer;">Delete task</p>
+                    </div>
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <p class="mt-2 mb-2" dmx-text="TaskView.data.Task.Task_description">Enter your content here</p>
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <div class="d-flex">
+                            <p>{{TaskView.data.Sub_Task_query.count()}}<b> Sub-task</b></p>
+                            <p class="ms-3">{{TaskView.data.Direct_processes.count()}}<b> Processes</b></p>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h5 class="medium fw-lighter">Your assignment(s)</h5>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <div class="row">
+                            <div class="col-12 mt-2">
+                                <div class="row">
+                                    <div class="col-12 mb-2 d-flex align-items-center">
+                                        <p class="fw-bold me-2">Sub-tasks</p>
+                                        <i class="bi-plus-circle-dotted check-icon" style="cursor: pointer;" dmx-on:click="Add_task.show();Add_task.Add_task_form.ReferenceTaskId.setValue(task_id.value)"></i>
+                                    </div>
+                                    <div class="d-flex col-12 mb-2" dmx-repeat:repeat_sub_tasks="TaskView.data.repeat_SubTasks" id="repeat_sub_tasks">
+                                        <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 w-100 bg-info" id="Main_task_container4">
+                                            <div class="d-flex">
+                                                <img class="rounded" width="40" height="40" src="/assets/Img/nature-2.jpg" dmx-bind:src="AvatarUrl">
+                                                <p class="fw-bold ms-2 me-2" dmx-text="TaskTitle">Title
+                                                </p>
+                                                <i class="bi-box-arrow-up-right "></i>
+                                                <p class="ms-2" dmx-text="Task_description">Enter your content here</p>
+                                                <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                            </div>
+                                            <div class="d-flex mt-2 mb-2">
+                                                <div class="collapse w-100" id="Add_subtask_processses_collapse" is="dmx-bs5-collapse">
+                                                    <div class="container-fluid">
+
+                                                        <div class="row ps-0 pe-0">
+                                                            <div class="col-12 mb-1 ps-0 pe-0 d-flex align-items-center">
+                                                                <p class="fw-bold small me-2">Processes</p>
+                                                                <i class="bi-plus-circle-dotted check-icon" dmx-on:click="Add_process.show();Edit_task_id.setValue(id)"></i>
+                                                            </div>
+                                                            <div class="d-flex col-12 process-container mb-2 pt-1 pb-1 ps-1 pe-1" dmx-repeat:repeat_subtask_processes="Subtask_processeses" dmx-class:bg-primary="(id == Process_id.value)" dmx-on:click="Process_id.setValue(id)" id="repeat_subtask_processes">
+                                                                <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                                    <div class="d-flex rounded-circle process-stat_container process-stat-container justify-content-center align-items-center">
+                                                                        <i class="bi-check-circle-fill check-icon" dmx-show="Completed"></i>
+                                                                        <i class="bi-circle" dmx-show="!Completed"></i>
+                                                                    </div>
+                                                                    <div class="d-flex process-progreess-bar">
+                                                                    </div>
+
+
+                                                                </div>
+                                                                <div class="d-flex w-80 w-100">
+                                                                    <div class="d-flex">
+                                                                        <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg" dmx-bind:src="imgUrl">
+                                                                    </div>
+                                                                    <div class="d-flex flex-column progress-content w-100">
+
+
+
+                                                                        <div class="d-flex w-100 align-items-start">
+                                                                            <p dmx-text="ProcessTitle">Squat 10x3</p>
+                                                                            <p class="rounded small bg-primary text-center progress-content w-auto" dmx-show="Completed">Completed at 25-5-21 10:04 pm</p>
+                                                                            <i class="bi-file-text-fill check-icon content" dmx-show="Notes"></i>
+                                                                        </div>
+                                                                        <div class="d-flex w-100">
+                                                                            <p class="fw-bold small" dmx-text="FirstName+' '+LastName">Emilio Galile</p>
+                                                                            <p class="small progress-content" dmx-text="Role">Acquisition</p>
+                                                                            <p class="small ms-auto" dmx-text="Due_date">21-5-21</p>
+                                                                            <i class="bi-bell-fill timeDue-alert-icon"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Main_task_collapse_dashboard.toggle()">
+                                                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M0.125 3.9375C0.0562496 3.9375 0 3.99375 0 4.0625V4.9375C0 5.00625 0.0562496 5.0625 0.125 5.0625H10.3438C10.5656 5.6125 11.1047 6 11.7344 6C12.5625 6 13.2344 5.32812 13.2344 4.5C13.2344 3.67188 12.5625 3 11.7344 3C11.1047 3 10.5656 3.3875 10.3438 3.9375H7.99531V1.5625C7.99531 0.7 7.29531 0 6.43281 0H0.125C0.0562496 0 0 0.0562496 0 0.125V1C0 1.06875 0.0562496 1.125 0.125 1.125H6.43281C6.675 1.125 6.87031 1.32031 6.87031 1.5625V3.9375H0.125ZM7.94219 8.59844L5.24687 6.47031C5.14844 6.39062 5 6.4625 5 6.59062V8.125H0.875C0.80625 8.125 0.75 8.18125 0.75 8.25V9.1875C0.75 9.25625 0.80625 9.3125 0.875 9.3125H5V10.8469C5 10.9734 5.14687 11.0469 5.24687 10.9672L7.94219 8.83906C8.01875 8.77813 8.01875 8.65937 7.94219 8.59844Z" fill="black"></path>
+                                                </svg>
+                                                <p class="ms-1 mark small" dmx-on:click="Add_subtask_processses_collapse.toggle()">View task details</p>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center style24">
+                                            <i class="bi-trash-fill"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="row">
+                                    <div class="col-12 mb-2 d-flex align-items-center">
+                                        <p class="fw-bold me-2">From direct processes</p>
+                                        <i class="bi-plus-circle-dotted check-icon" dmx-on:click="Add_process.show();Edit_task_id.setValue(task_id.value)"></i>
+                                    </div>
+                                    <div class="d-flex col-12 process-container mb-2 pt-2 pb-2" dmx-repeat:repeat_direct_processes="TaskView.data.Direct_processes" dmx-class:bg-primary="(id == Process_id.value)" id="repeat_direct_processes" style="cursor: pointer;">
+                                        <div class="row ps-0 pe-0 w-100">
+                                            <div class="d-flex col-12 w-100">
+                                                <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                    <div class="d-flex process-stat-container justify-content-center align-items-center">
+                                                        <i class="bi-check-circle-fill check-icon" dmx-show="(Completed == 1)"></i>
+                                                        <i class="bi-circle check-icon" dmx-show="(Completed != 1)"></i>
+                                                    </div>
+                                                    <div class="d-flex process-progreess-bar">
+                                                    </div>
+
+
+                                                </div>
+                                                <div class="d-flex w-80 w-100">
+                                                    <div class="d-flex">
+                                                        <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg" dmx-bind:src="imgUrl">
+                                                    </div>
+                                                    <div class="d-flex flex-column progress-content w-100" dmx-on:click="Process_id.setValue(id)">
+
+
+
+                                                        <div class="d-flex w-100 align-items-start">
+                                                            <p dmx-text="ProcessTitle">Squat 10x3</p>
+                                                            <p class="rounded small bg-primary text-center progress-content w-auto" dmx-show="(Completed == 1)">Completed at 25-5-21 10:04 pm</p>
+                                                            <i class="bi-file-text-fill check-icon content" dmx-show="(Notes != null)"></i>
+                                                        </div>
+                                                        <div class="d-flex w-100">
+                                                            <p class="fw-bold small" dmx-text="FirstName+' '+LastName">Emilio Galile</p>
+                                                            <p class="small progress-content" dmx-text="Role">Acquisition</p>
+                                                            <p class="small ms-auto" dmx-text="Due_date">21-5-21</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3 sidebar col-sm-3 order-lg-last d-none d-md-block order-md-last" id="Task_view_column_3" dmx-show="Process_id.value">
+                <div class="row" dmx-show="Process_id.value">
+                    <div class="col-12"><button id="btn_startChat1" class="btn w-100 btn-sm bg-info mb-2" dmx-hide="(Processs_view.data.query_process.Chat_started == true)" dmx-on:click="new_process_conversation.ProcessId_4_chat.setValue(Process_id.value);new_process_conversation.submit()">Start a chat on this process</button><button id="btn_GotoConvo1" class="btn btn-sm green-btn w-100" dmx-hide="(Processs_view.data.query_process.Chat_started != 1)">Go to process conversation</button></div>
+                    <div class="col-12 mt-5 mb-5">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-0">Attachments</h5>
+
+                            </div>
+                            <div class="col-12 mb-2 pt-2 pb-2" id="repeat_processes_atttachments" dmx-repeat:repeat_processes_atttachments="Processs_view.data.query">
+                                <div class="d-flex justify-content-between align-items-center bg-info pt-2 pb-2 ps-2 pe-2"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                    <p class="small" dmx-text="FileName">Enter your content here</p><i class="bi-cloud-download"></i>
+                                </div>
+
+
+
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-12">
+                        <h5 class="mb-2">Actions</h5>
+                        <button id="btn6" class="btn text-light bg-dark w-100 mt-3" dmx-on:click="delete_process.d_Process_id.setValue(Process_id.value);delete_process.submit();Process_id.setValue(0)">Delete process</button>
+                    </div>
+
+
+                    <div class="col-12 mt-5">
+                        <h5 class="mb-2">Notes</h5>
+                        <textarea id="text1" class="form-control"></textarea><button id="btn1" class="btn btn-primary text-center completed_btn w-100 mt-3">Mark as completed<i class="bi-check-circle-fill Menu-toggle"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</section>
+<section class="dashBard-section" id="DashBoard">
+    <div class="wappler-block container-fluid style19">
+        <div class="row no-gutters row-cols-12 row-cols-sm-12">
+            <div class="bg-info sidebar col-4 col-sm-4 col-md-4 order-2 order-lg-first" style="" id="dashboard_column_1">
+                <div class="row style29 visually-hidden" id="pins_row">
+                    <div class="col d-sm-none d-flex mb-3" dmx-on:click="leftSideBar_toggle.setValue(0)">
+                        <i class="bi-arrow-left check-icon"></i>
+                        <p class="ms-2 fw-bold text-muted">Back</p>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <h5>Pins&nbsp;<i class="bi-pin-angle-fill"></i>
+                            <i class="bi-plus-circle-fill dashboard-left-sideBar-addBtn"></i>
+                        </h5>
+                    </div>
+                    <div class="col-12">
+                        <div class="row pe-1">
+                            <div class="col-12">
+                                <div class="d-flex rounded bg-white pt-3 pb-3 ps-3 pe-3 style24">
+                                    <div class="d-flex ps-1 pe-1"><img class="rounded" src="/assets/Img/food-4.jpg" width="40" height="40"></div>
+                                    <div class="d-flex flex-column w-100">
+                                        <p class="fw-bold">Enter your content here</p>
+                                        <p>Enter your content here</p>
+                                        <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                        <div class="collapse" id="collapse1" is="dmx-bs5-collapse" show="true">
+                                            <div class="d-flex flex-column">
+                                                <p class="rounded small bg-primary text-center mt-2 mb-2 style25 w-50">Personal</p>
+                                                <p>Enter your content here</p>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row style29 visually-hidden" id="Chats_row">
+                    <div class="col-12 mb-3">
+                        <h5>Chats</h5>
+                    </div>
+                    <div class="col-12">
+                        <div class="row pe-1">
+                            <div class="col-12">
+                                <div class="d-flex rounded bg-white pt-3 pb-3 ps-3 pe-3">
+                                    <div class="d-flex ps-1 pe-1"><img class="rounded" src="/assets/Img/avatar-1.jpg" width="40" height="40"></div>
+                                    <div class="d-flex flex-column w-100">
+                                        <p class="fw-bold">Anna</p>
+                                        <p class="text-muted style33">Sales</p>
+                                        <p class="style34 border-start">Enter your content here</p>
+
+
+                                    </div>
+                                    <div class="d-flex">
+                                        <p class="text-center rounded-circle bg-primary style13 fw-bold">10</p>
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row style29" id="Events_row">
+                    <div class="col-12 mb-3">
+                        <h5>Events&nbsp;<i class="bi-plus-circle-fill dashboard-left-sideBar-addBtn" style="cursor: pointer;" dmx-on:click="Events.show()"></i>
+                        </h5>
+                    </div>
+                    <div class="col-12">
+                        <div class="row pe-1" is="dmx-repeat" id="repeat_events" dmx-bind:repeat="EventsQuery.data.repeat_currentUser_invites">
+                            <div class="col-12 mb-2">
+                                <div class="d-flex rounded bg-white pt-3 pb-3 ps-3 pe-3 flex-column">
+                                    <div class="d-flex ps-1 pe-1"><img class="rounded me-2" width="40" height="40" dmx-bind:src="query_event.imgUrl">
+                                        <div class="d-flex flex-column w-100">
+                                            <p class="fw-bold" dmx-text="query_event.EventTitle">Enter your content here</p>
+                                            <p dmx-text="query_event.Description">Enter your content here</p>
+
+
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-row align-content-around align-items-center mt-2 ms-3">
+
+                                        <div class="d-flex align-items-center ms-n3" dmx-repeat:repeat_invites_imgs="query_event_invites" dmx-bind:popover-title="FirstName+' '+LastName"><img class="rounded" width="30" height="30" dmx-bind:src="imgUrl" dmx-bs-tooltip="FirstName+LastName" data-bs-trigger="click"></div>
+                                        <p class="small ms-2" dmx-text="'+'+query_event_invites.count()+' participant(s)'">Enter your content here</p>
+                                    </div>
+                                    <p dmx-text="query_event.EventStartDate.toDate().formatDate('dd-MM-yyyy HH:mm')" class="ms-3">Enter your content here</p>
+
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row style29" id="Reminders_row">
+                    <div class="col-12 mb-3">
+                        <h5>Reminders<i class="bi-plus-circle-fill dashboard-left-sideBar-addBtn" style="cursor: pointer;" dmx-on:click="Reminder.show()"></i>
+                        </h5>
+                    </div>
+                    <div class="col-12">
+                        <div class="row pe-1" is="dmx-repeat" id="repeat_reminders" dmx-bind:repeat="RemindersQuery.data.query_Reminders">
+                            <div class="col-12 mb-2">
+                                <div class="d-flex rounded bg-white pt-3 pb-3 ps-3 pe-3">
+                                    <div class="d-flex ps-1 pe-1">
+                                        <i class="bi-lightbulb Reminder-icon"></i>
+                                    </div>
+                                    <div class="d-flex flex-column w-100">
+                                        <p class="fw-bold" dmx-text="RemiderTitle">Enter your content here</p>
+                                        <p dmx-text="Date">Enter your content here</p>
+                                        <p class="rounded small progress-content bg-primary text-center align-self-start mt-2 mb-2 ps-2 pe-2" dmx-class:bg-warning="(ReminderType != 'Personal')" dmx-text="ReminderType">Enter your content here</p>
+                                        <p dmx-text="Description">Enter your content here</p>
+
+
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="bg-secondary col-sm-5 order-1 sidebar middle order-lg-2 order-md-2" id="dashboard_column_2">
+                <div class="row" id="mytask">
+                    <div class="col d-sm-none d-flex mb-3" dmx-on:click="leftSideBar_toggle.setValue('sidebar')">
+                        <i class="bi-arrow-left check-icon"></i>
+                        <p class="ms-2 fw-bold text-muted">My pins,events,reminders</p>
+                    </div>
+                    <div class="col-12 mb-3 d-flex flex-row align-items-center">
+                        <h3>My tasks</h3>
+                        <p class="ms-auto mark small">View all</p>
+                    </div>
+                    <div class="col d-flex">
+                        <div class="d-flex flex-column justify-content-center style24">
+                            <i class="bi-check-circle-fill check-icon"></i>
+                            <i class="bi-clock check-icon"></i>
+                        </div>
+                        <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 w-100 bg-white" id="Main_task_container">
+                            <div class="d-flex">
+                                <img class="rounded" width="40" height="40" src="/assets/Img/nature-2.jpg">
+                                <p class="fw-bold ms-2 me-2">Title
+                                </p>
+                                <i class="bi-box-arrow-up-right "></i>
+                                <p class="ms-auto">Enter your content here</p>
+                                <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                            </div>
+                            <div class="d-flex mt-2 mb-2">
+                                <div class="collapse w-100" id="Main_task_collapse_dashboard" is="dmx-bs5-collapse">
+                                    <div class="container-fluid">
+                                        <div class="row mb-2">
+                                            <div class="col-12 mb-1 ps-0 pe-0">
+                                                <p class="fw-bold small">From sub-tasks</p>
+                                            </div>
+                                            <div class="ps-0 pe-0 col-12">
+                                                <div class="row">
+                                                    <div class="col d-flex ps-0 pe-0">
+                                                        <div class="d-flex flex-column justify-content-center style24">
+                                                            <i class="bi-check-circle-fill check-icon sub-tast"></i>
+                                                            <i class="bi-clock check-icon sub-tast"></i>
+                                                        </div>
+                                                        <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 bg-secondary w-100" id="Main_Sub_task_container">
+                                                            <div class="d-flex">
+                                                                <img class="rounded" width="40" height="40" src="/assets/Img/nature-2.jpg">
+                                                                <p class="fw-bold ms-2">Title</p>
+                                                                <p class="ms-auto">Enter your content here</p>
+                                                            </div>
+                                                            <div class="d-flex mt-2 mb-2 flex-wrap">
+                                                                <div class="collapse w-auto" id="Main_sub_task_collapse_dashboard" is="dmx-bs5-collapse">
+                                                                    <div class="ps-0 pe-0 container-lg">
+                                                                        <div class="d-flex mb-1">
+                                                                            <p class="fw-bold small">Processes</p>
+                                                                        </div>
+                                                                        <div class="d-flex">
+                                                                            <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                                                <div class="d-flex rounded-circle process-stat_container process-stat-container justify-content-center align-items-center">
+                                                                                    <i class="bi-check-circle-fill check-icon"></i>
+                                                                                </div>
+                                                                                <div class="d-flex process-progreess-bar">
+                                                                                </div>
+
+
+                                                                            </div>
+                                                                            <div class="d-flex w-80 w-100">
+                                                                                <div class="d-flex">
+                                                                                    <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg">
+                                                                                </div>
+                                                                                <div class="d-flex flex-column progress-content w-100">
+
+
+
+                                                                                    <div class="d-flex w-100 align-items-start">
+                                                                                        <p>Squat 10x3</p>
+                                                                                        <p class="rounded small bg-primary text-center progress-content w-auto">Completed at 25-5-21 10:04 pm</p><i class="bi-file-text-fill check-icon content"></i>
+                                                                                    </div>
+                                                                                    <div class="d-flex w-100">
+                                                                                        <p class="fw-bold small">Emilio Galile</p>
+                                                                                        <p class="small progress-content">Acquisition</p>
+                                                                                        <p class="small ms-auto">21-5-21</p>
+                                                                                        <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Main_sub_task_collapse_dashboard.toggle()">
+                                                                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M0.125 3.9375C0.0562496 3.9375 0 3.99375 0 4.0625V4.9375C0 5.00625 0.0562496 5.0625 0.125 5.0625H10.3438C10.5656 5.6125 11.1047 6 11.7344 6C12.5625 6 13.2344 5.32812 13.2344 4.5C13.2344 3.67188 12.5625 3 11.7344 3C11.1047 3 10.5656 3.3875 10.3438 3.9375H7.99531V1.5625C7.99531 0.7 7.29531 0 6.43281 0H0.125C0.0562496 0 0 0.0562496 0 0.125V1C0 1.06875 0.0562496 1.125 0.125 1.125H6.43281C6.675 1.125 6.87031 1.32031 6.87031 1.5625V3.9375H0.125ZM7.94219 8.59844L5.24687 6.47031C5.14844 6.39062 5 6.4625 5 6.59062V8.125H0.875C0.80625 8.125 0.75 8.18125 0.75 8.25V9.1875C0.75 9.25625 0.80625 9.3125 0.875 9.3125H5V10.8469C5 10.9734 5.14687 11.0469 5.24687 10.9672L7.94219 8.83906C8.01875 8.77813 8.01875 8.65937 7.94219 8.59844Z" fill="black"></path>
+                                                                </svg>
+                                                                <p class="ms-1 mark small" dmx-class:innertext-="">View task details</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row ps-0 pe-0">
+                                            <div class="col-12 mb-1 ps-0 pe-0">
+                                                <p class="fw-bold small">Processes</p>
+                                            </div>
+                                            <div class="d-flex ps-0 pe-0 col-12">
+                                                <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                    <div class="d-flex rounded-circle process-stat_container process-stat-container justify-content-center align-items-center">
+                                                        <i class="bi-check-circle-fill check-icon"></i>
+                                                    </div>
+                                                    <div class="d-flex process-progreess-bar">
+                                                    </div>
+
+
+                                                </div>
+                                                <div class="d-flex w-80 w-100">
+                                                    <div class="d-flex">
+                                                        <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg">
+                                                    </div>
+                                                    <div class="d-flex flex-column progress-content w-100">
+
+
+
+                                                        <div class="d-flex w-100 align-items-start">
+                                                            <p>Squat 10x3</p>
+                                                            <p class="rounded small bg-primary text-center progress-content w-auto">Completed at 25-5-21 10:04 pm</p><i class="bi-file-text-fill check-icon content"></i>
+                                                        </div>
+                                                        <div class="d-flex w-100">
+                                                            <p class="fw-bold small">Emilio Galile</p>
+                                                            <p class="small progress-content">Acquisition</p>
+                                                            <p class="small ms-auto">21-5-21</p>
+                                                            <i class="bi-bell-fill timeDue-alert-icon"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Main_task_collapse_dashboard.toggle()">
+                                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0.125 3.9375C0.0562496 3.9375 0 3.99375 0 4.0625V4.9375C0 5.00625 0.0562496 5.0625 0.125 5.0625H10.3438C10.5656 5.6125 11.1047 6 11.7344 6C12.5625 6 13.2344 5.32812 13.2344 4.5C13.2344 3.67188 12.5625 3 11.7344 3C11.1047 3 10.5656 3.3875 10.3438 3.9375H7.99531V1.5625C7.99531 0.7 7.29531 0 6.43281 0H0.125C0.0562496 0 0 0.0562496 0 0.125V1C0 1.06875 0.0562496 1.125 0.125 1.125H6.43281C6.675 1.125 6.87031 1.32031 6.87031 1.5625V3.9375H0.125ZM7.94219 8.59844L5.24687 6.47031C5.14844 6.39062 5 6.4625 5 6.59062V8.125H0.875C0.80625 8.125 0.75 8.18125 0.75 8.25V9.1875C0.75 9.25625 0.80625 9.3125 0.875 9.3125H5V10.8469C5 10.9734 5.14687 11.0469 5.24687 10.9672L7.94219 8.83906C8.01875 8.77813 8.01875 8.65937 7.94219 8.59844Z" fill="black"></path>
+                                </svg>
+                                <p class="ms-1 mark small" dmx-class:innertext-="">View task details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="bg-secondary col-sm-5 order-1 sidebar middle order-lg-2 order-md-2" id="dashboard_column_4">
+                <div class="row" id="mytask3">
+                    <div class="col d-sm-none d-flex mb-3" dmx-on:click="leftSideBar_toggle.setValue('sidebar')">
+                        <i class="bi-arrow-left check-icon"></i>
+                        <p class="ms-2 fw-bold text-muted">My pins,events,reminders</p>
+                    </div>
+                    <div class="col-12 mb-3 d-flex flex-row align-items-center">
+                        <h3>My tasks</h3>
+                        <p class="ms-auto mark small">View all</p>
+                    </div>
+                    <div class="col d-flex">
+                        <div class="d-flex flex-column justify-content-center style24">
+                            <i class="bi-check-circle-fill check-icon"></i>
+                            <i class="bi-clock check-icon"></i>
+                        </div>
+                        <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 w-100 bg-white" id="Main_task_container1">
+                            <div class="d-flex">
+                                <img class="rounded" width="40" height="40" src="/assets/Img/nature-2.jpg">
+                                <p class="fw-bold ms-2 me-2">Title
+                                </p>
+                                <i class="bi-box-arrow-up-right "></i>
+                                <p class="ms-auto">Enter your content here</p>
+                                <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                            </div>
+                            <div class="d-flex mt-2 mb-2">
+                                <div class="collapse w-100" id="Main_task_collapse_dashboard1" is="dmx-bs5-collapse">
+                                    <div class="container-fluid">
+                                        <div class="row mb-2">
+                                            <div class="col-12 mb-1 ps-0 pe-0">
+                                                <p class="fw-bold small">From sub-tasks</p>
+                                            </div>
+                                            <div class="ps-0 pe-0 col-12">
+                                                <div class="row">
+                                                    <div class="col d-flex ps-0 pe-0">
+                                                        <div class="d-flex flex-column justify-content-center style24">
+                                                            <i class="bi-check-circle-fill check-icon sub-tast"></i>
+                                                            <i class="bi-clock check-icon sub-tast"></i>
+                                                        </div>
+                                                        <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 bg-secondary w-100" id="Main_Sub_task_container1">
+                                                            <div class="d-flex">
+                                                                <img class="rounded" width="40" height="40" src="/assets/Img/nature-2.jpg">
+                                                                <p class="fw-bold ms-2">Title</p>
+                                                                <p class="ms-auto">Enter your content here</p>
+                                                            </div>
+                                                            <div class="d-flex mt-2 mb-2 flex-wrap">
+                                                                <div class="collapse w-auto" id="Main_sub_task_collapse_dashboard1" is="dmx-bs5-collapse">
+                                                                    <div class="ps-0 pe-0 container-lg">
+                                                                        <div class="d-flex mb-1">
+                                                                            <p class="fw-bold small">Processes</p>
+                                                                        </div>
+                                                                        <div class="d-flex">
+                                                                            <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                                                <div class="d-flex rounded-circle process-stat_container process-stat-container justify-content-center align-items-center">
+                                                                                    <i class="bi-check-circle-fill check-icon"></i>
+                                                                                </div>
+                                                                                <div class="d-flex process-progreess-bar">
+                                                                                </div>
+
+
+                                                                            </div>
+                                                                            <div class="d-flex w-80 w-100">
+                                                                                <div class="d-flex">
+                                                                                    <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg">
+                                                                                </div>
+                                                                                <div class="d-flex flex-column progress-content w-100">
+
+
+
+                                                                                    <div class="d-flex w-100 align-items-start">
+                                                                                        <p>Squat 10x3</p>
+                                                                                        <p class="rounded small bg-primary text-center progress-content w-auto">Completed at 25-5-21 10:04 pm</p><i class="bi-file-text-fill check-icon content"></i>
+                                                                                    </div>
+                                                                                    <div class="d-flex w-100">
+                                                                                        <p class="fw-bold small">Emilio Galile</p>
+                                                                                        <p class="small progress-content">Acquisition</p>
+                                                                                        <p class="small ms-auto">21-5-21</p>
+                                                                                        <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Main_sub_task_collapse_dashboard.toggle()">
+                                                                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M0.125 3.9375C0.0562496 3.9375 0 3.99375 0 4.0625V4.9375C0 5.00625 0.0562496 5.0625 0.125 5.0625H10.3438C10.5656 5.6125 11.1047 6 11.7344 6C12.5625 6 13.2344 5.32812 13.2344 4.5C13.2344 3.67188 12.5625 3 11.7344 3C11.1047 3 10.5656 3.3875 10.3438 3.9375H7.99531V1.5625C7.99531 0.7 7.29531 0 6.43281 0H0.125C0.0562496 0 0 0.0562496 0 0.125V1C0 1.06875 0.0562496 1.125 0.125 1.125H6.43281C6.675 1.125 6.87031 1.32031 6.87031 1.5625V3.9375H0.125ZM7.94219 8.59844L5.24687 6.47031C5.14844 6.39062 5 6.4625 5 6.59062V8.125H0.875C0.80625 8.125 0.75 8.18125 0.75 8.25V9.1875C0.75 9.25625 0.80625 9.3125 0.875 9.3125H5V10.8469C5 10.9734 5.14687 11.0469 5.24687 10.9672L7.94219 8.83906C8.01875 8.77813 8.01875 8.65937 7.94219 8.59844Z" fill="black"></path>
+                                                                </svg>
+                                                                <p class="ms-1 mark small" dmx-class:innertext-="">View task details</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row ps-0 pe-0">
+                                            <div class="col-12 mb-1 ps-0 pe-0">
+                                                <p class="fw-bold small">Processes</p>
+                                            </div>
+                                            <div class="d-flex ps-0 pe-0 col-12">
+                                                <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                    <div class="d-flex rounded-circle process-stat_container process-stat-container justify-content-center align-items-center">
+                                                        <i class="bi-check-circle-fill check-icon"></i>
+                                                    </div>
+                                                    <div class="d-flex process-progreess-bar">
+                                                    </div>
+
+
+                                                </div>
+                                                <div class="d-flex w-80 w-100">
+                                                    <div class="d-flex">
+                                                        <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg">
+                                                    </div>
+                                                    <div class="d-flex flex-column progress-content w-100">
+
+
+
+                                                        <div class="d-flex w-100 align-items-start">
+                                                            <p>Squat 10x3</p>
+                                                            <p class="rounded small bg-primary text-center progress-content w-auto">Completed at 25-5-21 10:04 pm</p><i class="bi-file-text-fill check-icon content"></i>
+                                                        </div>
+                                                        <div class="d-flex w-100">
+                                                            <p class="fw-bold small">Emilio Galile</p>
+                                                            <p class="small progress-content">Acquisition</p>
+                                                            <p class="small ms-auto">21-5-21</p>
+                                                            <i class="bi-bell-fill timeDue-alert-icon"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Main_task_collapse_dashboard.toggle()">
+                                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0.125 3.9375C0.0562496 3.9375 0 3.99375 0 4.0625V4.9375C0 5.00625 0.0562496 5.0625 0.125 5.0625H10.3438C10.5656 5.6125 11.1047 6 11.7344 6C12.5625 6 13.2344 5.32812 13.2344 4.5C13.2344 3.67188 12.5625 3 11.7344 3C11.1047 3 10.5656 3.3875 10.3438 3.9375H7.99531V1.5625C7.99531 0.7 7.29531 0 6.43281 0H0.125C0.0562496 0 0 0.0562496 0 0.125V1C0 1.06875 0.0562496 1.125 0.125 1.125H6.43281C6.675 1.125 6.87031 1.32031 6.87031 1.5625V3.9375H0.125ZM7.94219 8.59844L5.24687 6.47031C5.14844 6.39062 5 6.4625 5 6.59062V8.125H0.875C0.80625 8.125 0.75 8.18125 0.75 8.25V9.1875C0.75 9.25625 0.80625 9.3125 0.875 9.3125H5V10.8469C5 10.9734 5.14687 11.0469 5.24687 10.9672L7.94219 8.83906C8.01875 8.77813 8.01875 8.65937 7.94219 8.59844Z" fill="black"></path>
+                                </svg>
+                                <p class="ms-1 mark small" dmx-class:innertext-="">View task details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-3 sidebar col-sm-3 order-lg-last d-none d-md-block order-md-last" id="dashboard_column_3">
+                <div class="row">
+                    <div class="col"><input id="playlist" name="text1" type="text" class="form-control" placeholder="Enter spotify embed link">
+                        <div class="d-block" dmx-html="content.playlist.value"></div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="Add_tasks" class="dashBard-section visually-hidden">
+    <div class="wappler-block container-fluid style19">
+        <div class="row no-gutters row-cols-12 row-cols-sm-12">
+            <div class="bg-info sidebar col-sm-4 col-md-4 order-2 order-lg-first col-1" style="" id="Add_task_column_1">
+                <div class="row" id="mytask2">
+                    <div class="col-12 mb-3 d-flex flex-row align-items-center">
+                        <h3 dmx-bind:title="Process_id.value">Added tasks</h3>
+                        <div class="d-flex ms-auto" style="cursor: pointer;" dmx-on:click="Add_task.show();task_id.setValue(0)"><i class="bi-plus-circle-dotted check-icon"></i>
+                            <p class="mark small ms-1">Add new</p>
+                        </div>
+
+
+                    </div>
+                    <div class="col">
+                        <div class="row" is="dmx-repeat" id="repeat_new_tasks" dmx-bind:repeat="new_task_list.data.repeat">
+                            <div class="d-flex mb-3 col-12">
+
+                                <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 w-100 bg-white" id="Aded_task_container">
+                                    <div class="d-flex" style="cursor: pointer;" dmx-on:click="Task_id.setValue(content.repeat_new_tasks[0].id)">
+                                        <img class="rounded" width="40" height="40" dmx-bind:src="query.AvatarUrl">
+                                        <p class="fw-bold ms-2 me-2" dmx-text="query.TaskTitle">Title
+                                        </p>
+                                        <p dmx-text="Task_id.value">Enter your content here</p>
+                                        <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                    </div>
+                                    <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Task_id.setValue(content.repeat_new_tasks[0].id)">
+
+                                        <p class="ms-1 mark small" style="cursor: pointer;" dmx-on:click="task_id.setValue(query.id);Process_id.setValue(0)">View task details</p>
+                                        <i class="bi-arrow-right icon-left-auto" dmx-show="(query.id == task_id.value)"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="bg-secondary col-sm-5 sidebar middle order-lg-2 order-md-2 order-2" id="Add_task_column_2">
+                <div class="row" dmx-show="task_id.value">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <h1 class="medium fw-lighter" dmx-text="TaskView.data.Task.TaskTitle">Title</h1>
+                                <p class="mark" dmx-on:click="delete_task.d_Task_id.setValue(task_id.value);delete_task.submit()" style="cursor: pointer;">Delete task</p>
+                            </div>
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <p class="mt-2 mb-2" dmx-text="TaskView.data.Task.Task_description">Enter your content here</p>
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <div class="d-flex">
+                                    <p>{{TaskView.data.Sub_Task_query.count()}}<b> Sub-task</b></p>
+                                    <p class="ms-3">{{TaskView.data.Direct_processes.count()}}<b> Processes</b></p>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-12 mt-2">
+                                <div class="row">
+                                    <div class="col-12 mb-2 d-flex align-items-center">
+                                        <p class="fw-bold me-2">Sub-tasks</p>
+                                        <i class="bi-plus-circle-dotted check-icon" style="cursor: pointer;" dmx-on:click="Add_task.show();Add_task.Add_task_form.ReferenceTaskId.setValue(task_id.value)"></i>
+                                    </div>
+                                    <div class="d-flex col-12 mb-2" dmx-repeat:repeat_sub_tasks="TaskView.data.repeat_SubTasks" id="repeat_sub_tasks">
+                                        <div class="d-flex rounded flex-column pt-2 pb-2 ps-2 pe-2 w-100 bg-info" id="Main_task_container4">
+                                            <div class="d-flex">
+                                                <img class="rounded" width="40" height="40" src="/assets/Img/nature-2.jpg" dmx-bind:src="AvatarUrl">
+                                                <p class="fw-bold ms-2 me-2" dmx-text="TaskTitle">Title
+                                                </p>
+                                                <i class="bi-box-arrow-up-right "></i>
+                                                <p class="ms-2" dmx-text="Task_description">Enter your content here</p>
+                                                <i class="bi-alarm bi-bell-fill timeDue-alert-icon"></i>
+                                            </div>
+                                            <div class="d-flex mt-2 mb-2">
+                                                <div class="collapse w-100" id="Add_subtask_processses_collapse" is="dmx-bs5-collapse">
+                                                    <div class="container-fluid">
+
+                                                        <div class="row ps-0 pe-0">
+                                                            <div class="col-12 mb-1 ps-0 pe-0 d-flex align-items-center">
+                                                                <p class="fw-bold small me-2">Processes</p>
+                                                                <i class="bi-plus-circle-dotted check-icon" dmx-on:click="Add_process.show();Edit_task_id.setValue(id)"></i>
+                                                            </div>
+                                                            <div class="d-flex col-12 process-container mb-2 pt-1 pb-1 ps-1 pe-1" dmx-repeat:repeat_subtask_processes="Subtask_processeses" dmx-class:bg-primary="(id == Process_id.value)" dmx-on:click="Process_id.setValue(id)" id="repeat_subtask_processes">
+                                                                <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                                    <div class="d-flex rounded-circle process-stat_container process-stat-container justify-content-center align-items-center">
+                                                                        <i class="bi-check-circle-fill check-icon" dmx-show="Completed"></i>
+                                                                        <i class="bi-circle" dmx-show="!Completed"></i>
+                                                                    </div>
+                                                                    <div class="d-flex process-progreess-bar">
+                                                                    </div>
+
+
+                                                                </div>
+                                                                <div class="d-flex w-80 w-100">
+                                                                    <div class="d-flex">
+                                                                        <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg" dmx-bind:src="imgUrl">
+                                                                    </div>
+                                                                    <div class="d-flex flex-column progress-content w-100">
+
+
+
+                                                                        <div class="d-flex w-100 align-items-start">
+                                                                            <p dmx-text="ProcessTitle">Squat 10x3</p>
+                                                                            <p class="rounded small bg-primary text-center progress-content w-auto" dmx-show="Completed">Completed at 25-5-21 10:04 pm</p>
+                                                                            <i class="bi-file-text-fill check-icon content" dmx-show="Notes"></i>
+                                                                        </div>
+                                                                        <div class="d-flex w-100">
+                                                                            <p class="fw-bold small" dmx-text="FirstName+' '+LastName">Emilio Galile</p>
+                                                                            <p class="small progress-content" dmx-text="Role">Acquisition</p>
+                                                                            <p class="small ms-auto" dmx-text="Due_date">21-5-21</p>
+                                                                            <i class="bi-bell-fill timeDue-alert-icon"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex ps-5 align-items-center" style="cursor: pointer;" dmx-on:click="Main_task_collapse_dashboard.toggle()">
+                                                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M0.125 3.9375C0.0562496 3.9375 0 3.99375 0 4.0625V4.9375C0 5.00625 0.0562496 5.0625 0.125 5.0625H10.3438C10.5656 5.6125 11.1047 6 11.7344 6C12.5625 6 13.2344 5.32812 13.2344 4.5C13.2344 3.67188 12.5625 3 11.7344 3C11.1047 3 10.5656 3.3875 10.3438 3.9375H7.99531V1.5625C7.99531 0.7 7.29531 0 6.43281 0H0.125C0.0562496 0 0 0.0562496 0 0.125V1C0 1.06875 0.0562496 1.125 0.125 1.125H6.43281C6.675 1.125 6.87031 1.32031 6.87031 1.5625V3.9375H0.125ZM7.94219 8.59844L5.24687 6.47031C5.14844 6.39062 5 6.4625 5 6.59062V8.125H0.875C0.80625 8.125 0.75 8.18125 0.75 8.25V9.1875C0.75 9.25625 0.80625 9.3125 0.875 9.3125H5V10.8469C5 10.9734 5.14687 11.0469 5.24687 10.9672L7.94219 8.83906C8.01875 8.77813 8.01875 8.65937 7.94219 8.59844Z" fill="black"></path>
+                                                </svg>
+                                                <p class="ms-1 mark small" dmx-on:click="Add_subtask_processses_collapse.toggle()">View task details</p>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center style24">
+                                            <i class="bi-trash-fill"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="row">
+                                    <div class="col-12 mb-2 d-flex align-items-center">
+                                        <p class="fw-bold me-2">From direct processes</p>
+                                        <i class="bi-plus-circle-dotted check-icon" dmx-on:click="Add_process.show();Edit_task_id.setValue(task_id.value)"></i>
+                                    </div>
+                                    <div class="d-flex col-12 process-container mb-2 pt-2 pb-2" dmx-repeat:repeat_direct_processes="TaskView.data.Direct_processes" dmx-class:bg-primary="(id == Process_id.value)" id="repeat_direct_processes" style="cursor: pointer;">
+                                        <div class="row ps-0 pe-0 w-100">
+                                            <div class="d-flex col-12 w-100">
+                                                <div class="d-flex w-10 flex-column align-items-center progress-tracker">
+                                                    <div class="d-flex process-stat-container justify-content-center align-items-center">
+                                                        <i class="bi-check-circle-fill check-icon" dmx-show="(Completed == 1)"></i>
+                                                        <i class="bi-circle check-icon" dmx-show="(Completed != 1)"></i>
+                                                    </div>
+                                                    <div class="d-flex process-progreess-bar">
+                                                    </div>
+
+
+                                                </div>
+                                                <div class="d-flex w-80 w-100">
+                                                    <div class="d-flex">
+                                                        <img width="20" height="20" class="rounded-start rounded-end" src="/assets/Img/avatar-6.jpg" dmx-bind:src="imgUrl">
+                                                    </div>
+                                                    <div class="d-flex flex-column progress-content w-100" dmx-on:click="Process_id.setValue(id)">
+
+
+
+                                                        <div class="d-flex w-100 align-items-start">
+                                                            <p dmx-text="ProcessTitle">Squat 10x3</p>
+                                                            <p class="rounded small bg-primary text-center progress-content w-auto" dmx-show="(Completed == 1)">Completed at 25-5-21 10:04 pm</p>
+                                                            <i class="bi-file-text-fill check-icon content" dmx-show="(Notes != null)"></i>
+                                                        </div>
+                                                        <div class="d-flex w-100">
+                                                            <p class="fw-bold small" dmx-text="FirstName+' '+LastName">Emilio Galile</p>
+                                                            <p class="small progress-content" dmx-text="Role">Acquisition</p>
+                                                            <p class="small ms-auto" dmx-text="Due_date">21-5-21</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="col-3 sidebar col-sm-3 order-lg-last d-none d-md-block order-md-last" id="Add_task_column_3">
+                <div class="row" dmx-show="Process_id.value">
+                    <div class="col-12"><button id="btn_startChat1" class="btn w-100 btn-sm bg-info mb-2" dmx-hide="(Processs_view.data.query_process.Chat_started == true)" dmx-on:click="new_process_conversation.ProcessId_4_chat.setValue(Process_id.value);new_process_conversation.submit()">Start a chat on this process</button><button id="btn_GotoConvo1" class="btn btn-sm green-btn w-100" dmx-hide="(Processs_view.data.query_process.Chat_started != 1)">Go to process conversation</button></div>
+                    <div class="col-12 mt-5 mb-5">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-0">Attachments</h5>
+
+                            </div>
+                            <div class="col-12 mb-2 pt-2 pb-2" id="repeat_processes_atttachments" dmx-repeat:repeat_processes_atttachments="Processs_view.data.query">
+                                <div class="d-flex justify-content-between align-items-center bg-info pt-2 pb-2 ps-2 pe-2"><i class="bi-file-earmark-bar-graph-fill check-icon"></i>
+                                    <p class="small" dmx-text="FileName">Enter your content here</p><i class="bi-cloud-download"></i>
+                                </div>
+
+
+
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-12">
+                        <h5 class="mb-2">Actions</h5>
+                    </div>
+
+                    <button id="btn6" class="btn text-light bg-dark w-100 mt-3" dmx-on:click="delete_process.d_Process_id.setValue(Process_id.value);delete_process.submit();Process_id.setValue(0)">Delete process</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="Settings" class="dashBard-section visually-hidden">
+    <div class="wappler-block container-fluid style19">
+        <div class="row no-gutters row-cols-12 row-cols-sm-12">
+            <div class="bg-info sidebar col-sm-4 col-md-4 order-2 order-lg-first col-1" style="" id="Settings_column_1">
+                <div class="row">
+                    <div class="col d-flex flex-column justify-content-center align-items-center">
+                        <div class="d-flex rounded align-items-center justify-content-center mb-3 pt-2 pb-2 ps-2 pe-2 bg-white w-50" dmx-on:click="inner_page__toggle.setValue('users')">
+                            <p class="me-1">Users&nbsp;</p>
+                            <p class="fw-bold" dmx-text="All_users.data.query.count()">0</p>
+                            <i class="bi-arrow-right-circle-fill icon-left-auto" dmx-show="(inner_page__toggle.value == 'users')"></i>
+
+                        </div>
+                        <div class="d-flex rounded align-items-center justify-content-center mb-3 pt-2 pb-2 ps-2 pe-2 bg-white w-50" dmx-on:click="inner_page__toggle.setValue('subscription')">
+                            <p class="me-2">Subscription</p>
+                            <i class="bi-arrow-right-circle-fill icon-left-auto" dmx-show="(inner_page__toggle.value == 'subscription')"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-secondary col-sm-5 sidebar middle order-lg-2 order-md-2 order-2" id="Settings_column_2">
+                <div class="row justify-content-center" id="Users_row" dmx-show="(inner_page__toggle.value == 'users')">
+                    <div class="col-12 mb-3 d-flex justify-content-end" style="cursor: pointer;" dmx-on:click="NewEmployee.show()">
+                        <i class="bi-plus-circle-dotted"></i>
+                        <p class="mark small ms-2 me-0">Add new employee</p>
+                    </div>
+                    <div class="col-10">
+                        <div class="row justify-content-center" is="dmx-repeat" id="Repeat_Users" dmx-bind:repeat="All_users.data.query">
+                            <div class="d-flex rounded align-items-center col-8 mb-3 pt-2 pb-2 bg-primary" dmx-on:click="User_id.setValue(id)"><img width="30" height="30" class="rounded-circle me-2" src="/assets/Img/avatar-11.jpg" dmx-bind:src="imgUrl">
+                                <div class="d-flex flex-column">
+                                    <p class="fw-bold" dmx-text="FirstName+' '+LastName">Asad kanten&nbsp;</p>
+                                    <p dmx-text="Role">Sales</p>
+                                </div>
+                                <i class="bi-arrow-right-circle-fill icon-left-auto" dmx-show="(id == User_id.value)"></i>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row" id="SubscriptionDetails_row" dmx-show="(inner_page__toggle.value == 'subscription')">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col">
+                                <p class="small">Curent plan</p>
+                                <h5>Go plan</h5>
+                            </div>
+                            <div class="col">
+                                <p class="small">Subscription period</p>
+                                <h5>1/5/2021 - 1/6/2021</h5>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <p class="small">Auto</p>
+                                <h5>Yes</h5>
+                            </div>
+                            <div class="col">
+                                <p class="small">Subscription period</p>
+                                <h5>1/5/2021 - 1/6/2021</h5>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <p class="mb-2 small">Your invoices</p>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">#</th>
+                                                <th scope="col">Date</th>
+                                                <th scope="col">Number</th>
+                                                <th scope="col">Amount</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row">1</th>
+                                                <td>Mark</td>
+                                                <td>Otto</td>
+                                                <td>@mdo</td>
+                                                <td>
+                                                    <i class="bi-cloud-download check-icon"></i>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="col-3 sidebar col-sm-3 order-lg-last d-none d-md-block order-md-last" id="Settings_column_3">
+                <div class="row" id="User_details_row" dmx-show="(inner_page__toggle.value == 'users')">
+                    <div class="col">
+                        <div class="d-flex align-items-center">
+                            <p class="fw-bold">Asad kanten&nbsp;</p>
+                            <i class="bi-chat-left-text icon-left-auto"></i>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <form id="Update_user_form1" is="dmx-serverconnect-form" method="post" action="/api/Users/Update_user" dmx-on:success="toasts.show({message: 'User info updated!'})">
+                                <input id="user_id_1" name="id" type="hidden" class="form-control" dmx-bind:value="User_id.value">
+                                <div class="d-flex">
+                                    <div class="mb-3 me-3">
+                                        <label for="UpdateUser_Firstname" class="form-label">First name</label>
+                                        <input type="text" class="form-control" id="UpdateUser_Firstname" name="FirstName" aria-describedby="input1_help" dmx-bind:value="Single_user.data.User.FirstName">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="UpdateUser_Lastname" class="form-label">Last name</label>
+                                        <input type="text" class="form-control" id="UpdateUser_Lastname" name="LastName" aria-describedby="input1_help" dmx-bind:value="Single_user.data.User.LastName">
+                                    </div>
+
+                                </div>
+                                <div class="mb-3" id="UpdateUser_Email">
+                                    <label for="input3" class="form-label">Email</label>
+                                    <input type="text" class="form-control" id="input3" name="Email" aria-describedby="input1_help" dmx-bind:value="Single_user.data.User.Email">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="UpdateUser_Role" class="form-label">Role</label>
+                                    <input type="text" class="form-control" id="UpdateUser_Role" name="Role" aria-describedby="input1_help" dmx-bind:value="Single_user.data.User.Role">
+                                </div>
+                                <div class="mb-3" id="UpdateUser_password">
+                                    <label for="input5" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="input5" name="Pasword" aria-describedby="input1_help" required="">
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="mb-3">
+                                        <label for="UpdateUser_img" class="form-label">Avatar</label>
+                                        <input type="file" class="form-control" id="UpdateUser_img" name="User_img_File" aria-describedby="input9_help" dmx-bind:value="Users.data.users.imgName">
+                                    </div>
+                                    <img width="40" height="40" class="rounded-circle ms-2" dmx-bind:src="content.Update_user_form1.UpdateUser_img.file.dataUrl">
+                                </div>
+
+                                <div class="mb-3">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <h4 wappler-command="editContent">Permissions</h4>
+                            <div class="d-flex">
+                                <form id="Update_user_form2" is="dmx-serverconnect-form" method="post" action="/api/Users/Update_user" dmx-on:success="toasts.show({message: 'User info updated!'});Update_user_form2.reset()">
+                                    <input id="user_id_2" name="id" type="hidden" class="form-control">
+                                    <div is="dmx-checkbox-group" id="group1" class="checkbox-group"></div>
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Create_Update_team_Tasks" wappler-command="editContent">Create and update teams tasks</label>
+                                        <input class="form-check-input" type="checkbox" value="1" id="Create_Update_team_Tasks" name="Create_Update_team_Tasks" dmx-bind:checked="Single_user.data.User.Create_Update_team_Tasks">
+                                    </div>
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Create_Update_team_Events" wappler-command="editContent">Create and update teams events</label>
+                                        <input class="form-check-input" type="checkbox" value="1" id="Create_Update_team_Events" name="Create_Update_team_Events" dmx-bind:checked="Single_user.data.User.Create_Update_team_Events">
+                                    </div>
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Account_settings_and_subscription" wappler-command="editContent">Account settings and subscriptions</label>
+                                        <input class="form-check-input" type="checkbox" value="1" id="Account_settings_and_subscription" name="Account_settings_and_subscription" dmx-bind:checked="Single_user.data.User.Account_settings_and_subscription">
+                                    </div>
+                                    <div class="form-check">
+
+                                        <label class="form-check-label" for="Company_founder" wappler-command="editContent">Company co-founder</label>
+                                        <input class="form-check-input" type="checkbox" value="1" id="Company_founder" name="Company_founder" dmx-bind:checked="Single_user.data.User.Company_founder">
+                                    </div>
+                                    <div class="mb-3">
+                                    </div>
+                                </form>
+                            </div>
+                            <button id="btn10" class="btn mt-3 bg-warning" dmx-on:click="Update_user_form2.submit();Update_user_form1.submit()">Update</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="row_subscriptionDetails" dmx-show="(inner_page__toggle.value == 'subscription')">
+                    <div class="col-12 mb-2">
+                        <h5>Actions</h5>
+                    </div>
+                    <div class="col d-flex flex-column justify-content-start">
+                        <button id="btn2" class="btn btn-success" dmx-on:click="stripe.checkout()">Subscribe</button><button id="btn7" class="btn btn-warning mt-3">Change subscription</button>
+
+                        <button id="btn8" class="btn btn-primary mt-2">Turn off auto-renew</button>
+                        <div class="d-flex border-top mt-5 pt-2"><button id="btn9" class="btn w-100 btn-dark">Delete account</button></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    function scrollMessage() {
+        var objDiv = document.getElementById("repeat_messages1");
+        objDiv.scrollTop = objDiv.scrollHeight;
+    }
+</script>

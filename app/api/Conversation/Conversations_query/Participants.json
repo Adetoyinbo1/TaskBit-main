@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "convo_id"
+      },
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "query_participants",
+      "module": "dbconnector",
+      "action": "select",
+      "options": {
+        "connection": "db",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "Users",
+              "column": "FirstName"
+            },
+            {
+              "table": "Users",
+              "column": "LastName"
+            },
+            {
+              "table": "Users",
+              "column": "imgUrl"
+            },
+            {
+              "table": "Participants",
+              "column": "UserId"
+            }
+          ],
+          "table": {
+            "name": "Participants"
+          },
+          "joins": [
+            {
+              "table": "Users",
+              "column": "*",
+              "type": "INNER",
+              "clauses": {
+                "condition": "AND",
+                "rules": [
+                  {
+                    "table": "Users",
+                    "column": "id",
+                    "operator": "equal",
+                    "value": {
+                      "table": "Participants",
+                      "column": "UserId"
+                    },
+                    "operation": "="
+                  }
+                ]
+              }
+            }
+          ],
+          "wheres": {
+            "condition": "AND",
+            "rules": [
+              {
+                "id": "Participants.ConversationId",
+                "field": "Participants.ConversationId",
+                "type": "string",
+                "operator": "equal",
+                "value": "{{$_GET.convo_id}}",
+                "data": {
+                  "table": "Participants",
+                  "column": "ConversationId",
+                  "type": "text"
+                },
+                "operation": "="
+              }
+            ],
+            "conditional": null,
+            "valid": true
+          },
+          "query": "SELECT Users.FirstName, Users.LastName, Users.imgUrl, Participants.UserId\nFROM Participants\nINNER JOIN Users ON (Users.id = Participants.UserId)\nWHERE Participants.ConversationId = :P1 /* {{$_GET.convo_id}} */",
+          "params": [
+            {
+              "operator": "equal",
+              "type": "expression",
+              "name": ":P1",
+              "value": "{{$_GET.convo_id}}"
+            }
+          ]
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "name": "FirstName",
+          "type": "text"
+        },
+        {
+          "name": "LastName",
+          "type": "text"
+        },
+        {
+          "name": "imgUrl",
+          "type": "text"
+        },
+        {
+          "name": "UserId",
+          "type": "text"
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

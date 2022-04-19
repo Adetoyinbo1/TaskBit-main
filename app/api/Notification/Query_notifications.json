@@ -1,0 +1,162 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "companyid"
+      },
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query",
+        "module": "dbconnector",
+        "action": "select",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Users",
+                "column": "imgUrl",
+                "alias": "creatorImg"
+              },
+              {
+                "table": "Notification",
+                "column": "Notification_text"
+              },
+              {
+                "table": "Notification",
+                "column": "Conversationi_id"
+              },
+              {
+                "table": "Notification",
+                "column": "Task_id"
+              },
+              {
+                "table": "Notification",
+                "column": "Reminder_id"
+              },
+              {
+                "table": "Notification",
+                "column": "Event_id"
+              }
+            ],
+            "table": {
+              "name": "Notification"
+            },
+            "joins": [
+              {
+                "table": "Users",
+                "column": "*",
+                "type": "INNER",
+                "clauses": {
+                  "condition": "AND",
+                  "rules": [
+                    {
+                      "table": "Users",
+                      "column": "id",
+                      "operator": "equal",
+                      "value": {
+                        "table": "Notification",
+                        "column": "Creator_id"
+                      },
+                      "operation": "="
+                    }
+                  ]
+                }
+              }
+            ],
+            "query": "SELECT Users.imgUrl AS creatorImg, Notification.Notification_text, Notification.Conversationi_id, Notification.Task_id, Notification.Reminder_id, Notification.Event_id\nFROM Notification\nINNER JOIN Users ON (Users.id = Notification.Creator_id)\nWHERE Notification.Company_id = :P1 /* {{$_GET.companyid}} */ AND Notification.Notified_user_id = :P2 /* {{security.identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_GET.companyid}}"
+              },
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P2",
+                "value": "{{security.identity}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Notification.Company_id",
+                  "field": "Notification.Company_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{$_GET.companyid}}",
+                  "data": {
+                    "table": "Notification",
+                    "column": "Company_id",
+                    "type": "text"
+                  },
+                  "operation": "="
+                },
+                {
+                  "id": "Notification.Notified_user_id",
+                  "field": "Notification.Notified_user_id",
+                  "type": "string",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Notification",
+                    "column": "Notified_user_id",
+                    "type": "text"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "creatorImg",
+            "type": "text"
+          },
+          {
+            "name": "Notification_text",
+            "type": "text"
+          },
+          {
+            "name": "Conversationi_id",
+            "type": "text"
+          },
+          {
+            "name": "Task_id",
+            "type": "text"
+          },
+          {
+            "name": "Reminder_id",
+            "type": "text"
+          },
+          {
+            "name": "Event_id",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      }
+    ]
+  }
+}

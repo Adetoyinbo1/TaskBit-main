@@ -1,0 +1,652 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/App.ejs",
+      "linkedForm": "Event_form"
+    },
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ],
+    "$_POST": [
+      {
+        "type": "text",
+        "fieldName": "EventTitle",
+        "name": "EventTitle"
+      },
+      {
+        "type": "date",
+        "fieldName": "EventDate",
+        "options": {
+          "rules": {}
+        },
+        "name": "EventDate"
+      },
+      {
+        "type": "text",
+        "fieldName": "Users[]",
+        "multiple": true,
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            }
+          }
+        },
+        "name": "Users"
+      },
+      {
+        "type": "text",
+        "fieldName": "companyid",
+        "name": "companyid"
+      },
+      {
+        "type": "text",
+        "name": "Creator"
+      },
+      {
+        "type": "text",
+        "name": "Description"
+      },
+      {
+        "type": "array",
+        "name": "record",
+        "sub": [
+          {
+            "type": "text",
+            "name": "Event_id"
+          },
+          {
+            "type": "text",
+            "name": "Creator_id"
+          },
+          {
+            "type": "text",
+            "name": "Notification_text"
+          },
+          {
+            "type": "text",
+            "name": "Notified_user_id"
+          },
+          {
+            "type": "datetime",
+            "name": "Creation_date"
+          },
+          {
+            "type": "text",
+            "name": "insert"
+          },
+          {
+            "type": "text",
+            "name": "security"
+          },
+          {
+            "type": "text",
+            "name": "'You are invited to an event by '+query_currentUser"
+          },
+          {
+            "type": "text",
+            "name": "query_user"
+          },
+          {
+            "type": "datetime",
+            "name": "NOW"
+          },
+          {
+            "type": "text",
+            "name": "'You have been invited to an event by <p class=\"text-muted\"><u> '+query_currentUser"
+          },
+          {
+            "type": "text",
+            "name": "Event_notif_text"
+          },
+          {
+            "type": "text",
+            "name": "query_company"
+          }
+        ]
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      "SecurityProviders/security",
+      {
+        "name": "query_company",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Company_Account",
+                "column": "id"
+              }
+            ],
+            "table": {
+              "name": "Company_Account"
+            },
+            "joins": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Company_Account.id",
+                  "field": "Company_Account.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{$_POST.companyid}}",
+                  "data": {
+                    "table": "Company_Account",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            },
+            "query": "SELECT id\nFROM Company_Account\nWHERE id = :P1 /* {{$_POST.companyid}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{$_POST.companyid}}"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          }
+        ],
+        "type": "dbconnector_single",
+        "outputType": "object"
+      },
+      {
+        "name": "query_currentUser",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "Users",
+                "column": "id"
+              },
+              {
+                "table": "Users",
+                "column": "FirstName"
+              },
+              {
+                "table": "Users",
+                "column": "LastName"
+              }
+            ],
+            "table": {
+              "name": "Users"
+            },
+            "joins": [],
+            "query": "SELECT id, FirstName, LastName\nFROM Users\nWHERE id = :P1 /* {{security.identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{security.identity}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "Users.id",
+                  "field": "Users.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{security.identity}}",
+                  "data": {
+                    "table": "Users",
+                    "column": "id",
+                    "type": "number"
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "id",
+            "type": "text"
+          },
+          {
+            "name": "FirstName",
+            "type": "text"
+          },
+          {
+            "name": "LastName",
+            "type": "text"
+          }
+        ],
+        "type": "dbconnector_single",
+        "outputType": "object"
+      },
+      {
+        "name": "insert",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Events",
+                "column": "EventTitle",
+                "type": "text",
+                "value": "{{$_POST.EventTitle}}"
+              },
+              {
+                "table": "Events",
+                "column": "CompanyId",
+                "type": "text",
+                "value": "{{query_company.id}}"
+              },
+              {
+                "table": "Events",
+                "column": "Creator",
+                "type": "text",
+                "value": "{{query_currentUser.id}}"
+              },
+              {
+                "table": "Events",
+                "column": "EventStartDate",
+                "type": "datetime",
+                "value": "{{$_POST.EventDate.toLocalTime()}}"
+              },
+              {
+                "table": "Events",
+                "column": "Description",
+                "type": "text",
+                "value": "{{$_POST.Description}}"
+              }
+            ],
+            "table": "Events",
+            "returning": "id",
+            "query": "INSERT INTO Events\n(EventTitle, CompanyId, Creator, EventStartDate, Description) VALUES (:P1 /* {{$_POST.EventTitle}} */, :P2 /* {{query_company.id}} */, :P3 /* {{query_currentUser.id}} */, :P4 /* {{$_POST.EventDate.toLocalTime()}} */, :P5 /* {{$_POST.Description}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{$_POST.EventTitle}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{query_company.id}}"
+              },
+              {
+                "name": ":P3",
+                "type": "expression",
+                "value": "{{query_currentUser.id}}"
+              },
+              {
+                "name": ":P4",
+                "type": "expression",
+                "value": "{{$_POST.EventDate.toLocalTime()}}"
+              },
+              {
+                "name": ":P5",
+                "type": "expression",
+                "value": "{{$_POST.Description}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "insert_currentUser_invite",
+        "module": "dbupdater",
+        "action": "insert",
+        "options": {
+          "connection": "db",
+          "sql": {
+            "type": "insert",
+            "values": [
+              {
+                "table": "Event_invites",
+                "column": "EventId",
+                "type": "text",
+                "value": "{{insert.identity}}"
+              },
+              {
+                "table": "Event_invites",
+                "column": "UserId",
+                "type": "text",
+                "value": "{{query_currentUser.id}}"
+              }
+            ],
+            "table": "Event_invites",
+            "returning": "id",
+            "query": "INSERT INTO Event_invites\n(EventId, UserId) VALUES (:P1 /* {{insert.identity}} */, :P2 /* {{query_currentUser.id}} */)",
+            "params": [
+              {
+                "name": ":P1",
+                "type": "expression",
+                "value": "{{insert.identity}}"
+              },
+              {
+                "name": ":P2",
+                "type": "expression",
+                "value": "{{query_currentUser.id}}"
+              }
+            ]
+          }
+        },
+        "meta": [
+          {
+            "name": "identity",
+            "type": "text"
+          },
+          {
+            "name": "affected",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "name": "repeat_invites",
+        "module": "core",
+        "action": "repeat",
+        "options": {
+          "repeat": "{{$_POST.Users.split(',')}}",
+          "outputFields": [],
+          "exec": {
+            "steps": [
+              {
+                "name": "query_user",
+                "module": "dbconnector",
+                "action": "single",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "SELECT",
+                    "columns": [
+                      {
+                        "table": "Users",
+                        "column": "id"
+                      }
+                    ],
+                    "table": {
+                      "name": "Users"
+                    },
+                    "joins": [],
+                    "wheres": {
+                      "condition": "AND",
+                      "rules": [
+                        {
+                          "id": "Users.id",
+                          "field": "Users.id",
+                          "type": "double",
+                          "operator": "equal",
+                          "value": "{{$value}}",
+                          "data": {
+                            "table": "Users",
+                            "column": "id",
+                            "type": "number"
+                          },
+                          "operation": "="
+                        }
+                      ],
+                      "conditional": null,
+                      "valid": true
+                    },
+                    "query": "SELECT id\nFROM Users\nWHERE id = :P1 /* {{$value}} */",
+                    "params": [
+                      {
+                        "operator": "equal",
+                        "type": "expression",
+                        "name": ":P1",
+                        "value": "{{$value}}"
+                      }
+                    ]
+                  }
+                },
+                "output": true,
+                "meta": [
+                  {
+                    "name": "id",
+                    "type": "text"
+                  }
+                ],
+                "outputType": "object",
+                "type": "dbconnector_single"
+              },
+              {
+                "name": "insert_event_invites",
+                "module": "dbupdater",
+                "action": "insert",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "insert",
+                    "values": [
+                      {
+                        "table": "Event_invites",
+                        "column": "EventId",
+                        "type": "text",
+                        "value": "{{insert.identity}}"
+                      },
+                      {
+                        "table": "Event_invites",
+                        "column": "UserId",
+                        "type": "text",
+                        "value": "{{query_user.id}}"
+                      }
+                    ],
+                    "table": "Event_invites",
+                    "returning": "id",
+                    "query": "INSERT INTO Event_invites\n(EventId, UserId) VALUES (:P1 /* {{insert.identity}} */, :P2 /* {{query_user.id}} */)",
+                    "params": [
+                      {
+                        "name": ":P1",
+                        "type": "expression",
+                        "value": "{{insert.identity}}"
+                      },
+                      {
+                        "name": ":P2",
+                        "type": "expression",
+                        "value": "{{query_user.id}}"
+                      }
+                    ]
+                  }
+                },
+                "meta": [
+                  {
+                    "name": "identity",
+                    "type": "text"
+                  },
+                  {
+                    "name": "affected",
+                    "type": "number"
+                  }
+                ]
+              },
+              {
+                "name": "Event_notif_text",
+                "module": "core",
+                "action": "setvalue",
+                "options": {
+                  "key": "Event_notif_text",
+                  "value": "You have been invited to an event by <p class=\"text-muted\">{{query_currentUser.FirstName}} {{query_currentUser.LastName}}</p>"
+                }
+              },
+              {
+                "name": "insert_notification",
+                "module": "dbupdater",
+                "action": "insert",
+                "options": {
+                  "connection": "db",
+                  "sql": {
+                    "type": "insert",
+                    "values": [
+                      {
+                        "table": "Notification",
+                        "column": "Event_id",
+                        "type": "text",
+                        "value": "{{insert.identity}}"
+                      },
+                      {
+                        "table": "Notification",
+                        "column": "Creator_id",
+                        "type": "text",
+                        "value": "{{security.identity}}"
+                      },
+                      {
+                        "table": "Notification",
+                        "column": "Notification_text",
+                        "type": "text",
+                        "value": "{{Event_notif_text}}"
+                      },
+                      {
+                        "table": "Notification",
+                        "column": "Notified_user_id",
+                        "type": "text",
+                        "value": "{{query_user.id}}"
+                      },
+                      {
+                        "table": "Notification",
+                        "column": "Creation_date",
+                        "type": "datetime",
+                        "value": "{{NOW}}"
+                      },
+                      {
+                        "table": "Notification",
+                        "column": "Company_id",
+                        "type": "text",
+                        "value": "{{query_company.id}}"
+                      }
+                    ],
+                    "table": "Notification",
+                    "returning": "id",
+                    "query": "INSERT INTO Notification\n(Event_id, Creator_id, Notification_text, Notified_user_id, Creation_date, Company_id) VALUES (:P1 /* {{insert.identity}} */, :P2 /* {{security.identity}} */, :P3 /* {{Event_notif_text}} */, :P4 /* {{query_user.id}} */, :P5 /* {{NOW}} */, :P6 /* {{query_company.id}} */)",
+                    "params": [
+                      {
+                        "name": ":P1",
+                        "type": "expression",
+                        "value": "{{insert.identity}}"
+                      },
+                      {
+                        "name": ":P2",
+                        "type": "expression",
+                        "value": "{{security.identity}}"
+                      },
+                      {
+                        "name": ":P3",
+                        "type": "expression",
+                        "value": "{{Event_notif_text}}"
+                      },
+                      {
+                        "name": ":P4",
+                        "type": "expression",
+                        "value": "{{query_user.id}}"
+                      },
+                      {
+                        "name": ":P5",
+                        "type": "expression",
+                        "value": "{{NOW}}"
+                      },
+                      {
+                        "name": ":P6",
+                        "type": "expression",
+                        "value": "{{query_company.id}}"
+                      }
+                    ]
+                  }
+                },
+                "meta": [
+                  {
+                    "name": "identity",
+                    "type": "text"
+                  },
+                  {
+                    "name": "affected",
+                    "type": "number"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [
+          {
+            "name": "$index",
+            "type": "number"
+          },
+          {
+            "name": "$number",
+            "type": "number"
+          },
+          {
+            "name": "$name",
+            "type": "text"
+          },
+          {
+            "name": "$value",
+            "type": "object"
+          },
+          {
+            "name": "query_user",
+            "type": "object",
+            "sub": [
+              {
+                "name": "id",
+                "type": "text"
+              }
+            ]
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "refresh",
+        "module": "sockets",
+        "action": "refresh",
+        "options": {
+          "action": "Events/QueryEvent"
+        }
+      }
+    ]
+  }
+}
