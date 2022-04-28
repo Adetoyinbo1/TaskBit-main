@@ -825,7 +825,7 @@
                 <div class="row">
                     <div class="col-12 d-flex justify-content-between align-items-center">
                         <h1 class="medium fw-lighter" dmx-text="TaskView.data.Task.TaskTitle">Title</h1>
-                        <p class="mark" dmx-on:click="delete_task.d_Task_id.setValue(task_id.value);delete_task.submit();task_id.setValue(0)" style="cursor: pointer;">Delete task</p>
+                        <p class="mark small" dmx-on:click="delete_task.d_Task_id.setValue(task_id.value);delete_task.submit();task_id.setValue(0)" style="cursor: pointer;">Delete task</p>
                     </div>
                     <div class="col-12 d-flex justify-content-between align-items-center">
                         <p class="mt-2 mb-2" dmx-text="TaskView.data.Task.Task_description">Enter your content here</p>
@@ -991,7 +991,7 @@
                     </div>
                     <div class="col-12">
                         <h5 class="mb-2">Actions</h5>
-                        <button id="btn6" class="btn text-light bg-dark w-100 mt-3" dmx-on:click="delete_process.d_Process_id.setValue(Process_id.value);delete_process.submit();Process_id.setValue(0)">Delete process</button>
+                        <button id="btn6" class="btn text-light bg-dark mt-3 w-100" dmx-on:click="delete_process.d_Process_id.setValue(Process_id.value);delete_process.submit();Process_id.setValue(0)">Delete process</button>
                     </div>
 
 
@@ -1007,7 +1007,7 @@
         </div>
     </div>
 </section>
-<section class="dashBard-section" id="DashBoard">
+<section class="dashBard-section visually-hidden" id="DashBoard">
     <div class="wappler-block container-fluid style19">
         <div class="row no-gutters row-cols-12 row-cols-sm-12">
             <div class="bg-info sidebar col-4 col-sm-4 col-md-4 order-2 order-lg-first" style="" id="dashboard_column_1">
@@ -1660,7 +1660,7 @@
         </div>
     </div>
 </section>
-<section id="Settings" class="dashBard-section visually-hidden">
+<section id="Settings" class="dashBard-section">
     <div class="wappler-block container-fluid style19">
         <div class="row no-gutters row-cols-12 row-cols-sm-12">
             <div class="bg-info sidebar col-sm-4 col-md-4 order-2 order-lg-first col-1" style="" id="Settings_column_1">
@@ -1707,7 +1707,7 @@
                                 <h5>Go plan</h5>
                             </div>
                             <div class="col">
-                                <p class="small">Subscription period</p>
+                                <h5 class="small">Subscription period</h5>
                                 <h5>1/5/2021 - 1/6/2021</h5>
                             </div>
                         </div>

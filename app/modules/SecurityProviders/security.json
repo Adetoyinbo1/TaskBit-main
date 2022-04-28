@@ -12,7 +12,19 @@
       "username": "Email",
       "password": "Pasword"
     },
-    "permissions": {}
+    "permissions": {
+      "verified": {
+        "table": "Users",
+        "identity": "id",
+        "conditions": [
+          {
+            "column": "EmailVerified",
+            "operator": "is not null",
+            "value": ""
+          }
+        ]
+      }
+    }
   },
   "meta": [
     {

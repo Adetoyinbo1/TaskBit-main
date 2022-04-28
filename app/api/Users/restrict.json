@@ -4,6 +4,10 @@
   "action": "restrict",
   "options": {
     "provider": "security",
-    "loginUrl": "/signup_page"
+    "loginUrl": "/signup_page",
+    "permissions": [
+      "verified"
+    ],
+    "forbiddenUrl": "/signup_page"
   }
 }

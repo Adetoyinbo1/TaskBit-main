@@ -10,6 +10,579 @@
   },
   "schema": {
     "tables": {
+      "Chat_pins": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "ConversationId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Conversation"
+            }
+          },
+          "FounderId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Founder"
+            }
+          },
+          "EmployeeId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Employees"
+            }
+          }
+        },
+        "refs": {
+          "Conversation_chats": "Chat_pin_id"
+        }
+      },
+      "Pins": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "EmployeeID": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Employees"
+            }
+          },
+          "FounderID": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Founder"
+            }
+          },
+          "TaskID": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Tasks"
+            }
+          },
+          "ProcessID": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Process"
+            }
+          },
+          "EventID": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Events"
+            }
+          },
+          "TaskTitle": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "EventTitle": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "ProcessTitle": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Type": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "DueDate": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          }
+        }
+      },
+      "ProcessAttachments": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "ProcessID": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Process"
+            }
+          },
+          "FileName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FileUrl": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FilePath": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          }
+        },
+        "parent": "Process"
+      },
+      "Founder": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "UserName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FirstName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "LastName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Email": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Password": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Created_date": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Last_Updated": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          }
+        },
+        "refs": {
+          "Chat_pins": "FounderId",
+          "Pins": "FounderID",
+          "Events": "CreatorId(Founder)",
+          "Conversation_chats": "CreatorId(Founder)",
+          "Conversation": "CreatorId(Admin)",
+          "Participants": "FounderId",
+          "Company_Account": "CompanyFounder"
+        }
+      },
+      "Employees": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "UserName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FirstName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "LastName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Password": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Company": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Company_Account"
+            }
+          },
+          "CreateTeamTask": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "CreateTeamEvents": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "CreateCompanyAccounts": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Created_date": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Last_Updated": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Department": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          }
+        },
+        "refs": {
+          "Chat_pins": "EmployeeId",
+          "Pins": "EmployeeID",
+          "Event_invites": "InvitedEmployeeid",
+          "Events": "CreatorId(Employee)",
+          "Reminder": "EmployeeId",
+          "Conversation_chats": "CreatorId(Employee)",
+          "Conversation": "CreatorId(Employee)",
+          "Participants": "EmployeeId"
+        }
+      },
+      "Users": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false,
+              "unique": true
+            }
+          },
+          "FirstName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "LastName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Email": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Pasword": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Role": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Company": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Company_Account",
+              "unique": false,
+              "onUpdate": "CASCADE",
+              "onDelete": "CASCADE"
+            }
+          },
+          "Department": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Create_Update_team_Tasks": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Create_Update_team_Events": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Account_settings_and_subscription": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "Company_founder": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "CreatedDate": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "UpdatedDate": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "imgUrl": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "imgName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "imgPath": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true,
+              "unique": false
+            }
+          },
+          "EmailVerified": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "unique": false,
+              "nullable": true
+            }
+          }
+        },
+        "refs": {
+          "Companies_users": "userId",
+          "images": "user",
+          "Conversation_Pin": "Pinner_id",
+          "Event_invites": "UserId",
+          "Events": "Creator",
+          "Reminder": "Creator",
+          "Tasks": "CreatorID",
+          "Conversation_chats": "Creator",
+          "Conversation": "Creator",
+          "Process": "AssignedUserID",
+          "Notification": "Creator_id",
+          "Participants": "UserId"
+        }
+      },
+      "Companies_users": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "userId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          },
+          "CompanyId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Company_Account"
+            }
+          }
+        }
+      },
       "images": {
         "db": {
           "schema": "public"
@@ -56,6 +629,221 @@
             }
           }
         }
+      },
+      "Chats_attachments": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "Chat_msg_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Conversation_chats"
+            }
+          },
+          "FileUrl": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FileName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FilePath": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          }
+        }
+      },
+      "Conversation_Pin": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "ConversationId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Conversation"
+            }
+          },
+          "CreatorUsername": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "CreatorDepartment": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Chat_Text": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "File_Url": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "File_name": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "File_path": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Type": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Pinner_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          },
+          "Msg_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Conversation_chats"
+            }
+          }
+        },
+        "parent": "Conversation"
+      },
+      "Event_invites": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "InvitedEmployeeid": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Employees"
+            }
+          },
+          "EventId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Events"
+            }
+          },
+          "InvitedEmployeeFirstName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "InvitedEmployeeLastName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "InvitedEmployeeDepartment": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "InvitedEmployeeImgUrl": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "UserId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          }
+        },
+        "parent": "Events"
       },
       "Events": {
         "db": {
@@ -180,1176 +968,14 @@
               "nullable": true
             }
           }
-        }
-      },
-      "Pins": {
-        "db": {
-          "schema": "public"
         },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "EmployeeID": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Employees"
-            }
-          },
-          "FounderID": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Founder"
-            }
-          },
-          "TaskID": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Tasks"
-            }
-          },
-          "ProcessID": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Process"
-            }
-          },
-          "EventID": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Events"
-            }
-          },
-          "TaskTitle": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "EventTitle": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "ProcessTitle": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Type": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "DueDate": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Companies_users": {
-        "db": {
-          "schema": "public"
+        "refs": {
+          "Pins": "EventID",
+          "Reminder": "EventId",
+          "Notification": "Event_id"
         },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "userId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          },
-          "CompanyId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Company_Account"
-            }
-          }
-        }
-      },
-      "Chats_attachments": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "Chat_msg_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Conversation_chats"
-            }
-          },
-          "FileUrl": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FileName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FilePath": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "test": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "field1": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Conversation_chats": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "ConversationId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Conversation"
-            }
-          },
-          "CreatorId(Founder)": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Founder"
-            }
-          },
-          "CreatorId(Employee)": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Employees"
-            }
-          },
-          "CreatorUsername": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "CreatorDepartment": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "PinId": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "ChatText": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FileUrl": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FileName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FilePath": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Chat_Type": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "CreatorImgUrl": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Chat_pin_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Chat_pins"
-            }
-          },
-          "Creator": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          },
-          "Created_date": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Creation_date": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Process": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "ProcessTitle": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Due_date": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "TaskId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Tasks"
-            }
-          },
-          "Created_date": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Last_updated": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Completed": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Notes": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "AssignedUserID": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          },
-          "Chat_started": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Companyid": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Company_Account"
-            }
-          }
-        }
-      },
-      "Founder": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "UserName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FirstName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "LastName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Email": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Password": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Created_date": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Last_Updated": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Event_invites": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "InvitedEmployeeid": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Employees"
-            }
-          },
-          "EventId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Events"
-            }
-          },
-          "InvitedEmployeeFirstName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "InvitedEmployeeLastName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "InvitedEmployeeDepartment": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "InvitedEmployeeImgUrl": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "UserId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          }
-        }
-      },
-      "Company_Account": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "CompanyName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "CompanyFounder": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Founder"
-            }
-          },
-          "Created_date": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Last_updated": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Company_email": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Stripe_customer_id": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Employees": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "UserName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FirstName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "LastName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Password": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Company": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Company_Account"
-            }
-          },
-          "CreateTeamTask": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "CreateTeamEvents": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "CreateCompanyAccounts": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Created_date": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Last_Updated": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Department": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Chat_pins": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "ConversationId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Conversation"
-            }
-          },
-          "FounderId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Founder"
-            }
-          },
-          "EmployeeId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Employees"
-            }
-          }
-        }
-      },
-      "ProcessAttachments": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "ProcessID": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Process"
-            }
-          },
-          "FileName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FileUrl": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "FilePath": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Conversation": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "TaskId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Tasks"
-            }
-          },
-          "ProcessId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Process"
-            }
-          },
-          "CreatorId(Admin)": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Founder"
-            }
-          },
-          "CreatorId(Employee)": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Employees"
-            }
-          },
-          "CreatorUsername": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "TaskTitle": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "ProcessTitle": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Type": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Closed": {
-            "db": {
-              "type": "boolean",
-              "default": "'true'",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Creator": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          },
-          "Conversation_pinned_msg_id": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Conversation_pinned_message_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Conversation_chats"
-            }
-          },
-          "Conversation_closed": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Companyid": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Company_Account"
-            }
-          }
-        }
-      },
-      "Users": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "FirstName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "LastName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Email": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Pasword": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Role": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Company": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Company_Account"
-            }
-          },
-          "Department": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Create_Update_team_Tasks": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Create_Update_team_Events": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Account_settings_and_subscription": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Company_founder": {
-            "db": {
-              "type": "boolean",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "CreatedDate": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "UpdatedDate": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "imgUrl": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "imgName": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "imgPath": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          }
-        }
-      },
-      "Conversation_Pin": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "ConversationId": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Conversation"
-            }
-          },
-          "CreatorUsername": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "CreatorDepartment": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Chat_Text": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "File_Url": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "File_name": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "File_path": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Type": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Pinner_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          },
-          "Msg_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Conversation_chats"
-            }
-          }
+        "sub": {
+          "Event_invites": "EventId"
         }
       },
       "Reminder": {
@@ -1470,9 +1096,12 @@
               "nullable": true
             }
           }
+        },
+        "refs": {
+          "Notification": "Reminder_id"
         }
       },
-      "Notification": {
+      "test": {
         "db": {
           "schema": "public"
         },
@@ -1485,138 +1114,12 @@
               "nullable": false
             }
           },
-          "Conversationi_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Conversation"
-            }
-          },
-          "Task_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Tasks"
-            }
-          },
-          "Reminder_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Reminder"
-            }
-          },
-          "Event_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Events"
-            }
-          },
-          "Creator_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          },
-          "Notification_text": {
-            "db": {
-              "type": "text",
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Notified_user_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Users"
-            }
-          },
-          "Creation_date": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Company_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Company_Account"
-            }
-          }
-        }
-      },
-      "Subscriptions": {
-        "db": {
-          "schema": "public"
-        },
-        "columns": {
-          "id": {
-            "db": {
-              "type": "increments",
-              "default": "",
-              "primary": true,
-              "nullable": false
-            }
-          },
-          "Subscription_id": {
+          "field1": {
             "db": {
               "type": "string",
               "maxLength": 255,
               "primary": false,
               "nullable": true
-            }
-          },
-          "Account_customer_id": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Current_period_end": {
-            "db": {
-              "type": "timestamp",
-              "useTz": true,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Subscription_status": {
-            "db": {
-              "type": "string",
-              "maxLength": 255,
-              "primary": false,
-              "nullable": true
-            }
-          },
-          "Company_id": {
-            "db": {
-              "type": "reference",
-              "primary": false,
-              "nullable": true,
-              "references": "id",
-              "inTable": "Company_Account"
             }
           }
         }
@@ -1770,6 +1273,498 @@
               "nullable": true
             }
           }
+        },
+        "parent": "Tasks",
+        "refs": {
+          "Pins": "TaskID",
+          "images": "task",
+          "Reminder": "TaskId",
+          "Conversation": "TaskId",
+          "Process": "TaskId",
+          "Notification": "Task_id"
+        },
+        "sub": {
+          "Tasks": "ReferenceTaskId"
+        }
+      },
+      "Conversation_chats": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "ConversationId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Conversation"
+            }
+          },
+          "CreatorId(Founder)": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Founder"
+            }
+          },
+          "CreatorId(Employee)": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Employees"
+            }
+          },
+          "CreatorUsername": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "CreatorDepartment": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "PinId": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "ChatText": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FileUrl": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FileName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "FilePath": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Chat_Type": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "CreatorImgUrl": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Chat_pin_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Chat_pins"
+            }
+          },
+          "Creator": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          },
+          "Created_date": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Creation_date": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          }
+        },
+        "parent": "Conversation",
+        "refs": {
+          "Chats_attachments": "Chat_msg_id",
+          "Conversation_Pin": "Msg_id",
+          "Conversation": "Conversation_pinned_message_id"
+        }
+      },
+      "Conversation": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "TaskId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Tasks"
+            }
+          },
+          "ProcessId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Process"
+            }
+          },
+          "CreatorId(Admin)": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Founder"
+            }
+          },
+          "CreatorId(Employee)": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Employees"
+            }
+          },
+          "CreatorUsername": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "TaskTitle": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "ProcessTitle": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Type": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Closed": {
+            "db": {
+              "type": "boolean",
+              "default": "'true'",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Creator": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          },
+          "Conversation_pinned_msg_id": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Conversation_pinned_message_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Conversation_chats"
+            }
+          },
+          "Conversation_closed": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Companyid": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Company_Account"
+            }
+          }
+        },
+        "refs": {
+          "Chat_pins": "ConversationId",
+          "Notification": "Conversationi_id",
+          "Participants": "ConversationId"
+        },
+        "sub": {
+          "Conversation_Pin": "ConversationId",
+          "Conversation_chats": "ConversationId"
+        }
+      },
+      "Process": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "ProcessTitle": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Due_date": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "TaskId": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Tasks"
+            }
+          },
+          "Created_date": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Last_updated": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Completed": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Notes": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "AssignedUserID": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          },
+          "Chat_started": {
+            "db": {
+              "type": "boolean",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Companyid": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Company_Account"
+            }
+          }
+        },
+        "refs": {
+          "Pins": "ProcessID",
+          "Reminder": "ProcessId",
+          "Conversation": "ProcessId"
+        },
+        "sub": {
+          "ProcessAttachments": "ProcessID"
+        }
+      },
+      "Notification": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "Conversationi_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Conversation"
+            }
+          },
+          "Task_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Tasks"
+            }
+          },
+          "Reminder_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Reminder"
+            }
+          },
+          "Event_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Events"
+            }
+          },
+          "Creator_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          },
+          "Notification_text": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Notified_user_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Users"
+            }
+          },
+          "Creation_date": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Company_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Company_Account"
+            }
+          }
         }
       },
       "Participants": {
@@ -1840,6 +1835,135 @@
               "type": "boolean",
               "primary": false,
               "nullable": true
+            }
+          }
+        }
+      },
+      "Company_Account": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "CompanyName": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "CompanyFounder": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Founder"
+            }
+          },
+          "Created_date": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Last_updated": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Company_email": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Stripe_customer_id": {
+            "db": {
+              "type": "text",
+              "primary": false,
+              "nullable": true
+            }
+          }
+        },
+        "refs": {
+          "Employees": "Company",
+          "Users": "Company",
+          "Companies_users": "CompanyId",
+          "Events": "CompanyId",
+          "Reminder": "CompanyId",
+          "Tasks": "CompanyId",
+          "Conversation": "Companyid",
+          "Process": "Companyid",
+          "Notification": "Company_id",
+          "Subscriptions": "Company_id"
+        }
+      },
+      "Subscriptions": {
+        "db": {
+          "schema": "public"
+        },
+        "columns": {
+          "id": {
+            "db": {
+              "type": "increments",
+              "default": "",
+              "primary": true,
+              "nullable": false
+            }
+          },
+          "Subscription_id": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Account_customer_id": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Current_period_end": {
+            "db": {
+              "type": "timestamp",
+              "useTz": true,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Subscription_status": {
+            "db": {
+              "type": "string",
+              "maxLength": 255,
+              "primary": false,
+              "nullable": true
+            }
+          },
+          "Company_id": {
+            "db": {
+              "type": "reference",
+              "primary": false,
+              "nullable": true,
+              "references": "id",
+              "inTable": "Company_Account"
             }
           }
         }

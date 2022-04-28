@@ -161,14 +161,15 @@
                         "name": ":P1",
                         "value": "{{$_POST.CompanyId}}"
                       }
-                    ]
+                    ],
+                    "primary": "id"
                   }
                 },
                 "output": true,
                 "meta": [
                   {
-                    "name": "id",
-                    "type": "text"
+                    "type": "number",
+                    "name": "id"
                   }
                 ],
                 "outputType": "object",
@@ -326,7 +327,9 @@
                   "key": "task_id",
                   "value": "{{insert.identity}}"
                 },
-                "output": true
+                "output": true,
+                "meta": [],
+                "outputType": "text"
               }
             ]
           },
@@ -378,14 +381,15 @@
                         "name": ":P1",
                         "value": "{{$_POST.CompanyId}}"
                       }
-                    ]
+                    ],
+                    "primary": "id"
                   }
                 },
                 "output": true,
                 "meta": [
                   {
-                    "name": "id",
-                    "type": "text"
+                    "type": "number",
+                    "name": "id"
                   }
                 ],
                 "outputType": "object",
@@ -411,40 +415,20 @@
                     "joins": [],
                     "wheres": {
                       "condition": "AND",
-                      "rules": [
-                        {
-                          "id": "Tasks.id",
-                          "field": "Tasks.id",
-                          "type": "double",
-                          "operator": "equal",
-                          "value": "{{$_POST.ReferenceTaskId}}",
-                          "data": {
-                            "table": "Company_Account",
-                            "column": "id",
-                            "type": "number"
-                          },
-                          "operation": "="
-                        }
-                      ],
+                      "rules": [],
                       "conditional": null,
                       "valid": true
                     },
-                    "query": "SELECT id\nFROM Tasks\nWHERE id = :P1 /* {{$_POST.ReferenceTaskId}} */",
-                    "params": [
-                      {
-                        "operator": "equal",
-                        "type": "expression",
-                        "name": ":P1",
-                        "value": "{{$_POST.ReferenceTaskId}}"
-                      }
-                    ]
+                    "query": "SELECT id\nFROM Tasks",
+                    "params": [],
+                    "primary": "id"
                   }
                 },
                 "output": true,
                 "meta": [
                   {
-                    "name": "id",
-                    "type": "text"
+                    "type": "number",
+                    "name": "id"
                   }
                 ],
                 "outputType": "object",

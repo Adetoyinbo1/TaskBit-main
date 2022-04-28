@@ -41,12 +41,12 @@
       "output": true,
       "meta": [
         {
-          "name": "TaskTitle",
-          "type": "text"
+          "type": "text",
+          "name": "TaskTitle"
         },
         {
-          "name": "Task_description",
-          "type": "text"
+          "type": "text",
+          "name": "Task_description"
         }
       ],
       "outputType": "array"
