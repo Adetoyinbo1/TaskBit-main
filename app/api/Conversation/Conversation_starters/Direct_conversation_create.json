@@ -85,8 +85,8 @@
         "output": true,
         "meta": [
           {
-            "name": "id",
-            "type": "text"
+            "type": "number",
+            "name": "id"
           }
         ],
         "type": "dbconnector_single",

@@ -1,7 +1,7 @@
 {
   "routes": [
     {
-      "path": "/signup_page",
+      "path": "/",
       "page": "signup_page",
       "layout": "LandingTemplate"
     },
@@ -9,6 +9,7 @@
       "path": "/App",
       "page": "App",
       "layout": "AppTemplate",
+      "routeType": "page",
       "routes": [
         {
           "type": "page",
@@ -16,8 +17,7 @@
           "id": "Dashboard",
           "exact": "true"
         }
-      ],
-      "routeType": "page"
+      ]
     },
     {
       "path": "/playground",
